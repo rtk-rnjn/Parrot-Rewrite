@@ -1,0 +1,39 @@
+services:
+  mongo:
+    image: mongo:latest
+    command: --profile 2
+    container_name: parrot_mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+  
+  mongo-express:
+    image: mongo-express:latest
+    container_name: parrot_mongo_express
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=mongo
+      - ME_CONFIG_MONGODB_PORT=27017
+      - ME_CONFIG_BASICAUTH_USERNAME=admin
+      - ME_CONFIG_BASICAUTH_PASSWORD=admin
+    depends_on:
+      - mongo
+
+  redis:
+    image: "redis/redis-stack:latest"
+    container_name: parrot_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    environment:
+      - REDIS_ARGS="--protocol 3"
+
+volumes:
+  mongo_data:
+  redis_data:

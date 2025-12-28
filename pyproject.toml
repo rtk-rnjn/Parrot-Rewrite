@@ -1,0 +1,16 @@
+[tool.black]
+line-length = 175
+target-version = ['py313']
+skip-magic-trailing-comma = true
+skip-string-normalization = true
+
+[tool.isort]
+profile = "black"
+line_length = 175
+
+[tool.ruff]
+line-length = 175
+target-version = ["py313"]
+quote-style = "double"
+indent-style = "space"
+indent-size = 4
