@@ -6,6 +6,7 @@ attrs==25.4.0
 audioop-lts==0.2.2
 black==25.12.0
 braceexpand==0.1.7
+cffi==2.0.0
 click==8.3.1
 discord.py==2.6.4
 dnspython==2.8.0
@@ -26,9 +27,12 @@ parsedatetime==2.6
 pathspec==0.12.1
 platformdirs==4.5.1
 propcache==0.4.1
+psutil==7.2.0
 pyaml==25.7.0
+pycparser==2.23
 Pygments==2.19.2
 pymongo==4.15.5
+PyNaCl==1.5.0
 python-dateutil==2.9.0.post0
 python-dotenv==1.2.1
 python-frontmatter==1.1.0
