@@ -223,9 +223,7 @@ class UserFriendlyTime(commands.Converter):
         if match is None or not match.group(0):
             match = ShortTime.discord_fmt.match(argument)
             if match is not None:
-                result = FriendlyTimeResult(
-                    datetime.datetime.fromtimestamp(int(match.group("ts")), tz=datetime.timezone.utc).astimezone(tzinfo)
-                )
+                result = FriendlyTimeResult(datetime.datetime.fromtimestamp(int(match.group("ts")), tz=datetime.timezone.utc).astimezone(tzinfo))
                 remaining = argument[match.end() :].strip()
                 await result.ensure_constraints(ctx, self, now, remaining)
                 return result
@@ -300,14 +298,7 @@ class UserFriendlyTime(commands.Converter):
         return result
 
 
-def human_timedelta(
-    dt: datetime.datetime,
-    *,
-    source: datetime.datetime | None = None,
-    accuracy: int | None = 3,
-    brief: bool = False,
-    suffix: bool = True,
-) -> str:
+def human_timedelta(dt: datetime.datetime, *, source: datetime.datetime | None = None, accuracy: int | None = 3, brief: bool = False, suffix: bool = True) -> str:
     now = source or datetime.datetime.now(datetime.timezone.utc)
     if dt.tzinfo is None:
         dt = dt.replace(tzinfo=datetime.timezone.utc)

@@ -224,11 +224,7 @@ class Parrot(commands.Bot):  # pylint: disable=too-many-public-methods
         if message.guild is None or message.author.bot:
             return
 
-        if (
-            self.user
-            and re.fullmatch(rf"<@!?{self.user.id}>", message.content)
-            and message.channel.permissions_for(message.guild.me).send_messages
-        ):
+        if self.user and re.fullmatch(rf"<@!?{self.user.id}>", message.content) and message.channel.permissions_for(message.guild.me).send_messages:
             _ = await message.channel.send(f"Prefix: `{await self.get_guild_prefix(message.guild)}`", reference=message)
 
         await self.process_commands(message)
@@ -355,15 +351,11 @@ class Parrot(commands.Bot):  # pylint: disable=too-many-public-methods
             if resp.status != 200:
                 return
 
-            parser: Any = (
-                etree.XMLParser(  # pyright: ignore[reportUnknownVariableType, reportUnknownMemberType] # pylint: disable=c-extension-no-member
-                    ns_clean=True, recover=True, encoding="utf-8"
-                )
+            parser: Any = etree.XMLParser(  # pyright: ignore[reportUnknownVariableType, reportUnknownMemberType] # pylint: disable=c-extension-no-member
+                ns_clean=True, recover=True, encoding="utf-8"
             )
-            tree: Any = (
-                etree.fromstring(  # pyright: ignore[reportUnknownVariableType, reportUnknownMemberType] # pylint: disable=c-extension-no-member
-                    await resp.read(), parser=parser
-                )
+            tree: Any = etree.fromstring(  # pyright: ignore[reportUnknownVariableType, reportUnknownMemberType] # pylint: disable=c-extension-no-member
+                await resp.read(), parser=parser
             )
 
             entries: dict[str, CLDRDataEntry] = {
