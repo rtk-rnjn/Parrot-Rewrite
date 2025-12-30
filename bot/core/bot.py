@@ -45,7 +45,20 @@ REDIS_PORT = int(os.environ.get("REDIS_PORT", 6379))
 
 DEFAULT_PREFIX = "$"
 
-__all_cogs__ = ["bot.cogs.guild_specific.india_unfiltered.events", "bot.cogs.guild_specific.sector_17_29.events", "bot.cogs.meta"]
+__all_cogs__ = [
+    # Guild Specific Cogs
+    # INDIA UNFILTERED
+    "bot.cogs.guild_specific.india_unfiltered.channel_events",
+    "bot.cogs.guild_specific.india_unfiltered.member_events",
+    "bot.cogs.guild_specific.india_unfiltered.message_events",
+    "bot.cogs.guild_specific.india_unfiltered.voice_events",
+    # SECTOR 17-29
+    "bot.cogs.guild_specific.sector_17_29.events",
+    # Meta
+    "bot.cogs.meta",
+    # Common
+    "bot.cogs.common.scam_link_detection",
+]
 
 
 class CLDRDataEntry(NamedTuple):

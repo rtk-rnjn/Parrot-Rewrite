@@ -9,7 +9,6 @@ import parsedatetime as pdt
 from dateutil.relativedelta import relativedelta
 from discord import app_commands
 from discord.ext import commands
-from discord.utils import format_dt
 
 from .formats import human_join, plural
 

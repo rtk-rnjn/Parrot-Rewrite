@@ -13,11 +13,6 @@ from rich.traceback import install as rich_tracebacks
 
 from bot import Parrot
 
-try:
-    from orjson import loads as json_loads
-except ImportError:
-    from json import loads as json_loads
-
 with suppress(ImportError):
     import uvloop
 
