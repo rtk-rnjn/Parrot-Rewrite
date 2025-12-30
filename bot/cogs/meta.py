@@ -5,7 +5,6 @@ import time
 
 import discord
 from discord.ext import commands
-from discord.utils import maybe_coroutine
 
 from bot.core import Context, Parrot
 
@@ -23,10 +22,9 @@ class Meta(commands.Cog):
 
         message = await ctx.send("Pong!")
         latency = self.bot.latency * 1000
-        redis_latency = await maybe_coroutine(self.bot.redis_client.ping)
         end = time.perf_counter()
 
-        content = f"Pong! Bot Latency: {latency:.2f} ms | Redis Latency: {redis_latency * 1000:.2f} ms | Response Time: {(end - ini) * 1000:.2f} ms"
+        content = f"Pong! Bot Latency: **{latency:.2f}** ms | Response Time: **{(end - ini) * 1000:.2f}** ms"
 
         await message.edit(content=content)
 
