@@ -27,6 +27,7 @@ isort==7.0.0
 jishaku==2.6.3
 lxml==6.0.2
 markdown-it-py==4.0.0
+markdownify==1.2.2
 mccabe==0.7.0
 mdurl==0.1.2
 multidict==6.7.0
