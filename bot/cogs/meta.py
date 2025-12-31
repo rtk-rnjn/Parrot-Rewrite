@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import asyncio
-from collections import Counter
 import time
+from collections import Counter
 
 import discord
 from discord.ext import commands
