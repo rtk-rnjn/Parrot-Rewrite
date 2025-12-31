@@ -26,7 +26,10 @@ class IndiaUnfilteredChannelEvents(commands.Cog):
         if self.general_chat_channel is None:
             return
 
-        new_name = f"{GENERAL_CHAT_NAME_PREFIX}{self.bot.assets.random_adjective}-general"
+        new_name = f"{GENERAL_CHAT_NAME_PREFIX}{self.bot.assets.random_adjective}-general-chat"
+        if len(new_name) > 32:
+            new_name = f"{GENERAL_CHAT_NAME_PREFIX}general-chat"
+
         try:
             await self.general_chat_channel.edit(name=new_name, reason="Cycling general chat channel name.")
         except discord.Forbidden:

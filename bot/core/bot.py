@@ -62,9 +62,11 @@ __all_cogs__ = [
     "bot.cogs.common.link_to_codeblock",
     "bot.cogs.common.message_events",
 
-    # Fun
     "bot.cogs.meta",
     "bot.cogs.fun",
+    "bot.cogs.mod",
+    "bot.cogs.rtfm.rtfm",
+    "bot.cogs.rtfm.linter",
 ]
 # fmt: on
 
