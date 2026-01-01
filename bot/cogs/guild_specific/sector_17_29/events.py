@@ -81,7 +81,7 @@ class Sector1729Events(commands.Cog):
                 await maybe_coroutine(self.bot.redis_client.delete, f"sector1729:hub_voice_channel:{member.id}")
                 continue
 
-            if self.__should_delete_channel(member, channel):
+            if self.__should_delete_channel(channel):
                 try:
                     await channel.delete(reason="Cleaning up leftover hub voice channel on bot startup.")
                 except discord.NotFound:
@@ -89,7 +89,7 @@ class Sector1729Events(commands.Cog):
 
             await maybe_coroutine(self.bot.redis_client.delete, f"sector1729:hub_voice_channel:{member.id}")
 
-    def __should_delete_channel(self, member: discord.Member, channel: discord.abc.GuildChannel) -> bool:
+    def __should_delete_channel(self, channel: discord.abc.GuildChannel) -> bool:
         """Check if the hub voice channel should be deleted."""
         if not isinstance(channel, discord.VoiceChannel):
             return True

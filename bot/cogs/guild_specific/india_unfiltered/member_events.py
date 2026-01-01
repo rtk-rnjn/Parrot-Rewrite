@@ -79,7 +79,7 @@ class IndiaUnfilteredMemberEvents(commands.Cog):
         await self.leave_logs_channel.send(content)
 
     @commands.Cog.listener()
-    async def on_member_update(self, before: discord.Member, after: discord.Member) -> None:
+    async def on_member_update(self, before: discord.Member, _: discord.Member) -> None:
         if before.guild.id != SERVER_ID:
             return
 

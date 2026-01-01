@@ -22,6 +22,7 @@ from pymongo.asynchronous.collection import AsyncCollection
 from pymongo.asynchronous.mongo_client import AsyncMongoClient
 from rapidfuzz import fuzz, process
 from redis.asyncio import Redis
+import lavalink
 
 from .context import Context
 from .help import HelpCommand
@@ -124,6 +125,9 @@ class Parrot(commands.Bot):  # pylint: disable=too-many-public-methods
     }
 
     user: discord.ClientUser  # pyright: ignore[reportIncompatibleMethodOverride]
+    lavalink: lavalink.Client
+    default_lavalink_node: lavalink.Node
+
     assets = Assets()
 
     def __init__(self, version: str):
@@ -214,6 +218,9 @@ class Parrot(commands.Bot):  # pylint: disable=too-many-public-methods
 
         self.timer_task = self.loop.create_task(self.dispatch_timer())
         await self.parse_bcp47_timezones()
+
+        self.lavalink = lavalink.Client(self.user.id)
+        self.default_lavalink_node = self.lavalink.add_node(host='localhost', port=2333, password="youshallnotpass", region='us', name='default-node')
 
     @override
     async def close(self) -> None:

@@ -50,20 +50,20 @@ class MuteHandler:
     def moderation(self) -> Moderation:
         return self.bot.get_cog(Moderation.__name__)  # type: ignore
 
-    async def timeout_member(self, ctx: Context[Parrot], *, member: discord.Member, until: datetime.datetime, reason: str | None = None):
+    async def timeout_member(self, _: Context[Parrot], *, member: discord.Member, until: datetime.datetime, reason: str | None = None):
         await member.timeout(until, reason=reason)
 
-    async def remove_timeout(self, ctx: Context[Parrot], *, member: discord.Member, reason: str | None = None):
+    async def remove_timeout(self, _: Context[Parrot], *, member: discord.Member, reason: str | None = None):
         await member.timeout(None, reason=reason)
 
-    async def mute_member(self, ctx: Context[Parrot], *, member: discord.Member, until: datetime.datetime | None = None, reason: str | None = None):
+    async def mute_member(self, _: Context[Parrot], *, member: discord.Member, until: datetime.datetime | None = None, reason: str | None = None):
         tz = until.tzinfo if until else None
         if until and until < arrow.utcnow().replace(tzinfo=tz).shift(days=+28).datetime:
             # Use timeout feature
             await member.timeout(until, reason=reason)
             return
 
-    async def unmute_member(self, ctx: Context[Parrot], *, member: discord.Member, reason: str | None = None):
+    async def unmute_member(self, _: Context[Parrot], *, member: discord.Member, reason: str | None = None):
         if member.is_timed_out():
             await member.timeout(None, reason=reason)
 
@@ -136,7 +136,8 @@ class Moderation(commands.Cog):
 
         async for entry in ctx.guild.audit_logs(**kwargs):
             formatted_entry = fmt(entry)
-            audit_log_entries.append(formatted_entry)
+            if finder(entry):
+                audit_log_entries.append(formatted_entry)
 
         await ctx.paginate(lines=audit_log_entries)
 

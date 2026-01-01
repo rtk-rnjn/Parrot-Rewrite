@@ -43,7 +43,7 @@ class IndiaUnfilteredChannelEvents(commands.Cog):
     def general_chat_channel(self) -> discord.TextChannel | None:
         """Get the general chat text channel."""
         return cast(discord.TextChannel, self.bot.get_channel(GENERAL_CHAT_ID))
-    
+
     async def cog_unload(self) -> None:
         self.cycle_general_chat_name.cancel()
 

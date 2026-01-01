@@ -8,20 +8,6 @@ services:
       - "27017:27017"
     volumes:
       - mongo_data:/data/db
-  
-  mongo-express:
-    image: mongo-express:latest
-    container_name: parrot_mongo_express
-    restart: unless-stopped
-    ports:
-      - "8081:8081"
-    environment:
-      - ME_CONFIG_MONGODB_SERVER=mongo
-      - ME_CONFIG_MONGODB_PORT=27017
-      - ME_CONFIG_BASICAUTH_USERNAME=admin
-      - ME_CONFIG_BASICAUTH_PASSWORD=admin
-    depends_on:
-      - mongo
 
   redis:
     image: "redis/redis-stack:latest"
@@ -33,6 +19,26 @@ services:
     restart: unless-stopped
     environment:
       - REDIS_ARGS="--protocol 3"
+  
+  lavalink:
+    image: ghcr.io/lavalink-devs/lavalink:4-alpine
+    container_name: lavalink
+    restart: unless-stopped
+    environment:
+      - _JAVA_OPTIONS=-Xmx6G
+    volumes:
+      - ./application.yml:/opt/Lavalink/application.yml
+      - ./plugins/:/opt/Lavalink/plugins/
+    networks:
+      - lavalink
+    expose:
+      - 2333
+    ports:
+      - "2333:2333"
+
+networks:
+  lavalink:
+    name: lavalink
 
 volumes:
   mongo_data:

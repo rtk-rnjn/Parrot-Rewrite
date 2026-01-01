@@ -3,9 +3,12 @@ from __future__ import annotations
 import discord
 from discord.ext import commands
 
-HELP = """Hi! Thank you for showing interest in Parrot. The bot is no longer a "multi-purpose" bot, but rather have on-demand features that can be requested by server owners/admins directly.
+HELP = """
+Hi! Thank you for showing interest in Parrot.
+The bot is no longer a "multi-purpose" bot, but rather have on-demand features that can be requested by server owners/admins directly.
 
-Please contact the bot owner & developer `@rtk_rnjn` (previously known as `!! Ritik Ranjan [*.*]#9230`). He is a nice guy might code custom features for your server for FREE!
+Please contact the bot owner & developer `@rtk_rnjn` (previously known as `!! Ritik Ranjan [*.*]#9230`).
+He is a nice guy might code custom features for your server for FREE!
 """
 
 

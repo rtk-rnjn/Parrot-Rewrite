@@ -1,1 +1,1 @@
-from .mod import * # noqa
+from .mod import *  # noqa
