@@ -12,6 +12,7 @@ import arrow
 import dateutil
 import discord
 import jishaku
+import lavalink
 import pymongo
 import pymongo.errors
 from bson import ObjectId
@@ -22,7 +23,6 @@ from pymongo.asynchronous.collection import AsyncCollection
 from pymongo.asynchronous.mongo_client import AsyncMongoClient
 from rapidfuzz import fuzz, process
 from redis.asyncio import Redis
-import lavalink
 
 from .context import Context
 from .help import HelpCommand
