@@ -12,7 +12,7 @@ import arrow
 import dateutil
 import discord
 import jishaku
-import lavalink
+import pomice
 import pymongo
 import pymongo.errors
 from bson import ObjectId
@@ -68,6 +68,7 @@ __all_cogs__ = [
     "bot.cogs.mod",
     "bot.cogs.rtfm.rtfm",
     "bot.cogs.rtfm.linter",
+    "bot.cogs.music",
 ]
 # fmt: on
 
@@ -125,8 +126,6 @@ class Parrot(commands.Bot):  # pylint: disable=too-many-public-methods
     }
 
     user: discord.ClientUser  # pyright: ignore[reportIncompatibleMethodOverride]
-    lavalink: lavalink.Client
-    default_lavalink_node: lavalink.Node
 
     assets = Assets()
 
@@ -190,6 +189,11 @@ class Parrot(commands.Bot):  # pylint: disable=too-many-public-methods
         }
         self.broadcasted_messages: list[str] = []
 
+        self.lavalink_node_pool: pomice.NodePool = pomice.NodePool()
+        self.default_lavalink_node: pomice.Node | None = None
+
+        self.ON_READY_EVENT_FIRED = False
+
     @property
     def http_session(self) -> aiohttp.ClientSession:
 
@@ -200,6 +204,14 @@ class Parrot(commands.Bot):  # pylint: disable=too-many-public-methods
 
         await self.mongo_client["admin"].command("ping")
         await self.redis_client.ping()  # type: ignore
+
+        if not self.ON_READY_EVENT_FIRED:
+            if self.default_lavalink_node is None:
+                node = await self.lavalink_node_pool.create_node(bot=self, host="localhost", port=2333, password="youshallnotpass", identifier="MAIN")
+
+            self.default_lavalink_node = node
+
+            self.ON_READY_EVENT_FIRED = True
 
     @override
     async def get_prefix(self, message: discord.Message, /) -> list[str]:
@@ -218,9 +230,6 @@ class Parrot(commands.Bot):  # pylint: disable=too-many-public-methods
 
         self.timer_task = self.loop.create_task(self.dispatch_timer())
         await self.parse_bcp47_timezones()
-
-        self.lavalink = lavalink.Client(self.user.id)
-        self.default_lavalink_node = self.lavalink.add_node(host='localhost', port=2333, password="youshallnotpass", region='us', name='default-node')
 
     @override
     async def close(self) -> None:

@@ -7,6 +7,8 @@ import discord
 from discord.ext import commands
 from jishaku.paginators import PaginatorEmbedInterface
 
+from .utils import Player
+
 if TYPE_CHECKING:
     from .bot import Parrot
 
@@ -23,18 +25,22 @@ class Context(commands.Context[BotT]):
 
     guild: discord.Guild  # pyright: ignore[reportIncompatibleVariableOverride]
     author: discord.Member  # pyright: ignore[reportIncompatibleVariableOverride]
+    voice_client: Player | None
+    me: discord.Member  # pyright: ignore[reportIncompatibleVariableOverride]
 
     @property
     def session(self):
         return self.bot.http_session
 
-    async def tick(self, checked: bool = True) -> None:
-        emoji = "\N{WHITE HEAVY CHECK MARK}" if checked else "\N{CROSS MARK}"
+    async def tick(self, checked: bool = True, *, emoji: discord.PartialEmoji | str | None = None) -> None:
+        emoji = emoji or ("\N{WHITE HEAVY CHECK MARK}" if checked else "\N{CROSS MARK}")
 
-        try:
+        if self.channel.permissions_for(self.me).add_reactions:
             await self.message.add_reaction(emoji)
-        except (discord.Forbidden, discord.HTTPException):
-            _ = await self.send(f"{self.author.mention} {emoji}")
+            return
+
+        if self.channel.permissions_for(self.me).send_messages:
+            _ = await self.reply(f"{self.author.mention} {emoji}")
 
     async def error(
         self,
@@ -111,6 +117,16 @@ class Context(commands.Context[BotT]):
         view.message = await self.send("There are too many matches... Which one did you mean?", view=view, ephemeral=ephemeral)
         await view.wait()
         return view.selected
+
+    async def channel_connect(self, *, timeout: float = 30, reconnect: bool = True, cls: T | None = None, self_deaf: bool = True, self_mute: bool = False) -> Player | T:
+        if self.author.voice is None or self.author.voice.channel is None:
+            raise commands.CommandError("You are not connected to a voice channel.")
+
+        voice_client = await self.author.voice.channel.connect(timeout=timeout, reconnect=reconnect, cls=cls or Player, self_deaf=self_deaf, self_mute=self_mute)  # type: ignore[assignment]
+        if hasattr(voice_client, "ctx"):
+            voice_client.ctx = self  # type: ignore[attr-defined]
+
+        return voice_client
 
 
 class DisambiguatorView(discord.ui.View, Generic[T]):

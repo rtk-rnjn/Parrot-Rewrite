@@ -42,7 +42,7 @@ class SnipeMessageListeners:
 
         return data
 
-    async def store_message(self, key_prefix: str, message: discord.Message, *, older_message: discord.Message | None = None, ttl: int = 10) -> None:
+    async def store_message(self, key_prefix: str, message: discord.Message, *, older_message: discord.Message | None = None, ttl: int = 360) -> None:
         channel_key = f"{key_prefix}:{message.channel.id}"
         message_key = f"{key_prefix}:{message.id}"
 
