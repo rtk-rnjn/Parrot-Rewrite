@@ -15,7 +15,14 @@ plugins:
       - ANDROID_VR
       - WEB
       - WEBEMBEDDED
- 
+  lavasrc:
+    providers:
+      - "ytsearch:\"%ISRC%\""
+      - "ytsearch:%QUERY%"
+    sources:
+      youtube: true
+      ytdlp: true
+
 lavalink:
   plugins:
     - dependency: "dev.lavalink.youtube:youtube-plugin:1.16.0"

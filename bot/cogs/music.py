@@ -77,7 +77,7 @@ class Music(commands.Cog):
             await ctx.tick(emoji="\N{WARNING SIGN}")
             return
 
-        for search_type in [pomice.SearchType.ytmsearch, pomice.SearchType.ytsearch, pomice.SearchType.scsearch]:
+        for search_type in [pomice.SearchType.scsearch]:
             result = await ctx.voice_client.get_tracks(query, search_type=search_type, ctx=ctx)
             if result is not None:
                 break
@@ -115,10 +115,7 @@ class Music(commands.Cog):
         current_length = player.position
 
         await ctx.reply(
-            f"**Now Playing:** [{title}](<{url}>) by {author}\n"
-            f"**Duration:** {duration // 60000}:{(duration % 60000) // 1000:02} | "
-            f"**Current Position:** {current_length // 60000}:{(current_length % 60000) // 1000:02}\n"
-            f"{self.__create_duration_string(total_duration=duration, current_duration=current_length)}",
+            f"**Now Playing:** [{title}](<{url}>) by {author}\n" f"{self.__create_duration_string(total_duration=duration, current_duration=current_length)}",
             suppress_embeds=True,
         )
 
@@ -150,7 +147,6 @@ class Music(commands.Cog):
     @commands.Cog.listener()
     async def on_pomice_track_start(self, player: Player, track: pomice.Track) -> None:
         player._reset_votes()
-        print(f"[Parrot] Now playing: {track.title} ({track.uri})")
 
     @commands.Cog.listener()
     async def on_pomice_track_end(self, player: Player, track: pomice.Track, reason: str) -> None:
