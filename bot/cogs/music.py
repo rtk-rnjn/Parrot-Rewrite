@@ -184,8 +184,10 @@ class Music(commands.Cog):
         providers = await self.fetch_lavasrc_providers()
 
         for host, port, password in providers:
-            await self.bot.lavalink_node_pool.create_node(bot=self.bot, host=host, port=int(port), password=password, identifier=f"{host}:{port}")
-
+            try:
+                await self.bot.lavalink_node_pool.create_node(bot=self.bot, host=host, port=int(port), password=password, identifier=f"{host}:{port}")
+            except Exception:
+                pass
 
 async def setup(bot: Parrot) -> None:
     await bot.add_cog(Music(bot))
