@@ -9,6 +9,7 @@ from discord.ext import commands
 if TYPE_CHECKING:
     from bot.core import Context, Parrot, Player
 
+
 class Music(commands.Cog):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
@@ -171,7 +172,7 @@ class Music(commands.Cog):
             if host and port and password and identifier:
                 providers.append((host, port, password, identifier))
 
-        return providers        
+        return providers
 
     @commands.command(name="loadlavasrc")
     @commands.is_owner()
