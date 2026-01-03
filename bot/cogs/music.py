@@ -189,5 +189,31 @@ class Music(commands.Cog):
             except Exception:
                 pass
 
+    @commands.command(name="loadlavasrc")
+    @commands.is_owner()
+    async def load_lavasrc(self, ctx: Context[Parrot]) -> None:
+        """Loads Lavalink nodes from the lavasrc list."""
+
+        await self.add_lavasrc_providers()
+        await ctx.tick()
+
+    @commands.command(name="listnodes")
+    async def list_nodes(self, ctx: Context[Parrot]) -> None:
+        """Lists all connected Lavalink nodes."""
+
+        nodes = self.bot.lavalink_node_pool.nodes
+        if not nodes:
+            await ctx.reply("No Lavalink nodes are connected.", delete_after=5)
+            return
+
+        description = ""
+        for _, node in nodes.items():
+            description += f"**ID:** {node._identifier}\n**Host:** {node._host}:{node._port}\n**Players:** {len(node.players)}\n\n"
+
+        embed = discord.Embed(title="Connected Lavalink Nodes", description=description, color=discord.Color.blurple())
+        await ctx.reply(embed=embed)
+        await ctx.tick()
+
+
 async def setup(bot: Parrot) -> None:
     await bot.add_cog(Music(bot))
