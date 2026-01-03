@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import os
-import re
 from typing import TYPE_CHECKING
 
 import discord
@@ -10,11 +8,6 @@ from discord.ext import commands
 
 if TYPE_CHECKING:
     from bot.core import Context, Parrot, Player
-
-GITHUB_HEADERS = {"Authorization": f"token {os.environ['GITHUB_PERSONAL_ACCESS_TOKEN']}", "Accept": "application/json"}
-SOURCE_URI = "https://raw.githubusercontent.com/DarrenOfficial/lavalink-list/refs/heads/master/docs/NoSSL/Lavalink-NonSSL.md"
-CODE_BLOCK_RE = re.compile(r"```bash(.*?)```", re.DOTALL)
-
 
 class Music(commands.Cog):
     def __init__(self, bot: Parrot) -> None:
@@ -158,46 +151,51 @@ class Music(commands.Cog):
     async def on_pomice_track_end(self, player: Player, track: pomice.Track, reason: str) -> None:
         await player.play_next()
 
-    async def _make_request(self, url: str) -> str:
-        async with self.bot.http_session.get(url, headers=GITHUB_HEADERS) as response:
-            return await response.text()
+    async def _make_request(self) -> list[dict]:
+        uri = "https://lavalink-list.ajieblogs.eu.org/NonSSL"
+        async with self.bot.http_session.get(uri) as response:
+            return await response.json()
 
-    def _scrap(self, text: str) -> list[tuple[str, str, str]]:
-        code_blocks: list[str] = CODE_BLOCK_RE.findall(text)
-        results: list[tuple[str, str, str]] = []
+    async def fetch_lavasrc_providers(self) -> list[tuple[str, str, str, str]]:
+        data: list[dict[str, str]] = await self._make_request()
+        providers = []
 
-        for block in code_blocks:
-            block = block.strip()
-            lines: list[str] = block.split("\n")
-            host = lines[0].split(":", 1)[-1].strip()
-            port = lines[1].split(":", 1)[-1].strip()
-            password = lines[2].split(":", 1)[-1].strip().strip('"')
-            results.append((host, port, password))
+        for provider in data:
+            if provider.get("version") != "v4":
+                continue
 
-        return results
+            identifier = provider["identifier"]
+            host = provider["host"]
+            port = provider["port"]
+            password = provider["password"]
+            if host and port and password and identifier:
+                providers.append((host, port, password, identifier))
 
-    async def fetch_lavasrc_providers(self) -> list[tuple[str, str, str]]:
-        content = await self._make_request(SOURCE_URI)
-        return self._scrap(content)
-
-    async def add_lavasrc_providers(self) -> None:
-        providers = await self.fetch_lavasrc_providers()
-
-        for host, port, password in providers:
-            try:
-                await self.bot.lavalink_node_pool.create_node(bot=self.bot, host=host, port=int(port), password=password, identifier=f"{host}:{port}")
-            except Exception:
-                pass
+        return providers        
 
     @commands.command(name="loadlavasrc")
     @commands.is_owner()
     async def load_lavasrc(self, ctx: Context[Parrot]) -> None:
         """Loads Lavalink nodes from the lavasrc list."""
 
-        await self.add_lavasrc_providers()
+        errors = []
+        providers = await self.fetch_lavasrc_providers()
+
+        for host, port, password, identifier in providers:
+            try:
+                await self.bot.lavalink_node_pool.create_node(bot=self.bot, host=host, port=int(port), password=password, identifier=identifier)
+            except Exception as e:
+                errors.append((identifier, str(e)))
+                continue
+        if errors:
+            description = "\n".join(f"**{identifier}**: {error}" for identifier, error in errors)
+            embed = discord.Embed(title="Lavalink Node Load Errors", description=description, color=discord.Color.red())
+            await ctx.reply(embed=embed)
+
         await ctx.tick()
 
     @commands.command(name="listnodes")
+    @commands.is_owner()
     async def list_nodes(self, ctx: Context[Parrot]) -> None:
         """Lists all connected Lavalink nodes."""
 
@@ -208,7 +206,7 @@ class Music(commands.Cog):
 
         description = ""
         for _, node in nodes.items():
-            description += f"**ID:** {node._identifier}\n**Host:** {node._host}:{node._port}\n**Players:** {len(node.players)}\n\n"
+            description += f"**Host:** {node._host}:{node._port}\n**Players:** {len(node.players)}\n\n"
 
         embed = discord.Embed(title="Connected Lavalink Nodes", description=description, color=discord.Color.blurple())
         await ctx.reply(embed=embed)
