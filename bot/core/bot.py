@@ -149,6 +149,7 @@ class Parrot(commands.Bot):  # pylint: disable=too-many-public-methods
         self._db = self.mongo_client[self.DATABASE_NAME]
 
         self.timer_collection: AsyncCollection[TimerConfig] = self._db["timers"]
+        self.user_configurations_collection = self._db["user_configurations"]
 
         self.redis_client = Redis(host=REDIS_HOST, port=REDIS_PORT, decode_responses=True, protocol=3)
         self.version = version
@@ -425,4 +426,11 @@ class Parrot(commands.Bot):  # pylint: disable=too-many-public-methods
         return dateutil.tz.gettz(tz) or datetime.timezone.utc
 
     async def get_timezone(self, user_id: int, /) -> str | None:
-        return None
+        data = await self.user_configurations_collection.find_one({"id": user_id}, {"timezone": 1})
+        if data is None:
+            return None
+
+        return data.get("timezone")
+
+    async def set_timezone(self, user_id: int, timezone: str) -> None:
+        await self.user_configurations_collection.update_one({"id": user_id}, {"$set": {"timezone": timezone}}, upsert=True)

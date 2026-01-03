@@ -77,8 +77,10 @@ class Music(commands.Cog):
             await ctx.tick(emoji="\N{WARNING SIGN}")
             return
 
+        node = self.bot.lavalink_node_pool.get_best_node(algorithm=pomice.NodeAlgorithm.by_players)
         for search_type in [pomice.SearchType.scsearch]:
-            result = await ctx.voice_client.get_tracks(query, search_type=search_type, ctx=ctx)
+
+            result = await node.get_tracks(query, search_type=search_type, ctx=ctx)
             if result is not None:
                 break
 
@@ -182,6 +184,7 @@ class Music(commands.Cog):
         errors = []
         providers = await self.fetch_lavasrc_providers()
 
+        await ctx.tick(emoji="\N{HOURGLASS WITH FLOWING SAND}")
         for host, port, password, identifier in providers:
             try:
                 await self.bot.lavalink_node_pool.create_node(bot=self.bot, host=host, port=int(port), password=password, identifier=identifier)

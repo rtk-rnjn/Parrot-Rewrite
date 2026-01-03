@@ -103,7 +103,7 @@ class Context(commands.Context[BotT]):
         interface = PaginatorEmbedInterface(self.bot, paginator, owner=self.author, timeout=300)
         return await interface.send_to(self)
 
-    async def disambiguate(self, matches: list[T], entry: Callable[[T], Any], *, ephemeral: bool = False) -> T | None:
+    async def disambiguate(self, matches: list[T], entry: Callable[[T], Any], *, ephemeral: bool = False) -> T:
         if len(matches) == 0:
             raise ValueError("No results found.")
 
@@ -113,7 +113,7 @@ class Context(commands.Context[BotT]):
         if len(matches) > 25:
             raise ValueError("Too many results... sorry.")
 
-        view = DisambiguatorView(self, matches, entry)
+        view = DisambiguatorView(self, matches, entry, default_select=matches[0])
         view.message = await self.send("There are too many matches... Which one did you mean?", view=view, ephemeral=ephemeral)
         await view.wait()
         return view.selected
@@ -132,11 +132,11 @@ class Context(commands.Context[BotT]):
 class DisambiguatorView(discord.ui.View, Generic[T]):
     message: discord.Message
 
-    def __init__(self, ctx: Context[BotT], data: list[T], entry: Callable[[T], str]):
+    def __init__(self, ctx: Context[BotT], data: list[T], entry: Callable[[T], str], *, default_select: T):
         super().__init__()
         self.ctx = ctx
         self.data: list[T] = data
-        self.selected: T | None = None
+        self.selected: T = default_select
 
         options: list[discord.SelectOption] = []
         for i, x in enumerate(data):

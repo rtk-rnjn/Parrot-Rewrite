@@ -227,7 +227,7 @@ class RTFM(commands.Cog):
     async def get_pypi_package(self, url: str):
         return await self.session.get(url=url)
 
-    @commands.group(aliases=["py", "python3"], invoke_without_command=True)
+    @commands.group(name="python-tutorial", aliases=["pytut", "python3-tutorial"], invoke_without_command=True)
     async def python(self, ctx: Context[Parrot], *, text: str = commands.parameter(description="The tutorial to search for.")) -> None:
         """Search for a python tutorial."""
         match = await asyncio.to_thread(extractOne, text, self._python_cached.keys())
@@ -484,7 +484,7 @@ class RTFM(commands.Cog):
                         anchor = soup.find(attrs={"name": href[1:]})
                         h2 = anchor.find_parent() if anchor else None
 
-                emb.add_field(name=tag.string, value=self.get_content(h2), inline=False)
+                emb.add_field(name=str(tag.string).strip(), value=(self.get_content(h2)).strip(), inline=False)
 
             await ctx.reply(embed=emb)
 
