@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import os
+import re
 from typing import TYPE_CHECKING
 
 import discord
@@ -8,6 +10,10 @@ from discord.ext import commands
 
 if TYPE_CHECKING:
     from bot.core import Context, Parrot, Player
+
+GITHUB_HEADERS = {"Authorization": f"token {os.environ['GITHUB_PERSONAL_ACCESS_TOKEN']}", "Accept": "application/json"}
+SOURCE_URI = "https://raw.githubusercontent.com/DarrenOfficial/lavalink-list/refs/heads/master/docs/NoSSL/Lavalink-NonSSL.md"
+CODE_BLOCK_RE = re.compile(r"```bash(.*?)```", re.DOTALL)
 
 
 class Music(commands.Cog):
@@ -151,6 +157,34 @@ class Music(commands.Cog):
     @commands.Cog.listener()
     async def on_pomice_track_end(self, player: Player, track: pomice.Track, reason: str) -> None:
         await player.play_next()
+
+    async def _make_request(self, url: str) -> str:
+        async with self.bot.http_session.get(url, headers=GITHUB_HEADERS) as response:
+            return await response.text()
+
+    def _scrap(self, text: str) -> list[tuple[str, str, str]]:
+        code_blocks: list[str] = CODE_BLOCK_RE.findall(text)
+        results: list[tuple[str, str, str]] = []
+
+        for block in code_blocks:
+            block = block.strip()
+            lines: list[str] = block.split("\n")
+            host = lines[0].split(":", 1)[-1].strip()
+            port = lines[1].split(":", 1)[-1].strip()
+            password = lines[2].split(":", 1)[-1].strip().strip('"')
+            results.append((host, port, password))
+
+        return results
+
+    async def fetch_lavasrc_providers(self) -> list[tuple[str, str, str]]:
+        content = await self._make_request(SOURCE_URI)
+        return self._scrap(content)
+
+    async def add_lavasrc_providers(self) -> None:
+        providers = await self.fetch_lavasrc_providers()
+
+        for host, port, password in providers:
+            await self.bot.lavalink_node_pool.create_node(bot=self.bot, host=host, port=int(port), password=password, identifier=f"{host}:{port}")
 
 
 async def setup(bot: Parrot) -> None:
