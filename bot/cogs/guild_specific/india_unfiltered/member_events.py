@@ -21,9 +21,19 @@ class IndiaUnfilteredMemberEvents(commands.Cog):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
 
-    def random_discord_fact(self) -> str:
+    def _random_discord_fact(self) -> str:
         """Get a random Discord fact."""
         return random.choice(self.bot.assets.discord_facts)
+
+    def _random_quote(self) -> str:
+        """Get a random quote."""
+        return random.choice(self.bot.assets.quotes)
+
+    def random_string(self) -> str:
+        """Get a random sentence."""
+        choices = [f"Here's a random Discord fact for you: **{self._random_discord_fact()}**", f"*{self._random_quote()}*"]
+
+        return random.choice(choices)
 
     @property
     def join_logs_channel(self) -> discord.TextChannel | None:
@@ -60,7 +70,7 @@ class IndiaUnfilteredMemberEvents(commands.Cog):
 
         content = f"Welcome {member.mention} to {member.guild.name}!"
         if random.random() < 0.2:
-            content += f"\n- Here's a random Discord fact for you: **{self.random_discord_fact()}**"
+            content += f"\n-# {self.random_string()}"
 
         await self.general_chat_channel.send(content)
 

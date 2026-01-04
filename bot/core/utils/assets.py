@@ -22,6 +22,7 @@ class Paths(Enum):
     LANGUAGES = ASSETS / "lang.txt"
     PYTHON_TAGS = ASSETS / "python_tags"
     DISCORD_FACTS = ASSETS / "discord_facts.json"
+    QUOTES = ASSETS / "quotes.txt"
 
 
 class Emoji(Enum):
@@ -40,6 +41,7 @@ class Assets:
         self._default_langs: dict[str, str] = {}
         self._python_tags: dict[str, frontmatter.Post] = {}
         self._discord_facts: list[str] = []
+        self._quotes: list[str] = []
 
         self.emoji = Emoji
 
@@ -122,3 +124,12 @@ class Assets:
         with open(Paths.DISCORD_FACTS.value, "r", encoding="utf-8") as file:
             self._discord_facts = json.load(file)
             return self._discord_facts
+
+    @property
+    def quotes(self) -> list[str]:
+        if self._quotes:
+            return self._quotes
+
+        with open(Paths.QUOTES.value, "r", encoding="utf-8") as file:
+            self._quotes = [line.strip() for line in file if line.strip()]
+            return self._quotes
