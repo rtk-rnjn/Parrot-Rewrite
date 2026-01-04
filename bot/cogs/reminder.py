@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import datetime
+from random import random
 from typing import TYPE_CHECKING, Annotated, TypedDict
 
 import arrow
@@ -22,6 +23,12 @@ class ReminderMetadata(TypedDict):
     channel_id: int
     message_id: int
     content: str
+
+
+class MessageDeleteMetadata(TypedDict):
+    guild_id: int
+    channel_id: int
+    message_id: int
 
 
 class Reminders(commands.Cog):  # pylint: disable=too-many-public-methods
@@ -107,7 +114,7 @@ class Reminders(commands.Cog):  # pylint: disable=too-many-public-methods
         """
         due_date = when.dt
         user_tz_name = await self.get_timezone(ctx.author.id)
-        if user_tz_name is None:
+        if user_tz_name is None and random() < 0.25:
             user_tz_name = "UTC"
             warning_msg = (
                 "\n-# You have not set a timezone, so UTC time is being used. Use the `timezone set` command to set your timezone. "
@@ -126,7 +133,7 @@ class Reminders(commands.Cog):  # pylint: disable=too-many-public-methods
         await self.bot.create_timer(due_date=due_date, event_name="reminder_complete", metadata=dict(metadata))
 
         remaining_time = discord.utils.format_dt(due_date, "R")
-        await ctx.send(f"Okay, I will remind you in {remaining_time}. {warning_msg}")
+        await ctx.send(f"You will be reminded **{remaining_time}**.{warning_msg}")
 
     @commands.Cog.listener()
     async def on_reminder_complete(self, reminder: TimerConfig) -> None:

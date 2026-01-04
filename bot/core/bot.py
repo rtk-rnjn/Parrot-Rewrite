@@ -307,13 +307,13 @@ class Parrot(commands.Bot):  # pylint: disable=too-many-public-methods
     async def __check_once(self, ctx: Context[Self]) -> bool:
         return True
 
-    async def get_active_timer(self) -> TimerConfig | None:
-        now = arrow.utcnow().datetime
+    # Timer related methods
 
-        timer = await self.timer_collection.find_one({"due_date": {"$lte": now}}, sort=[("due_date", pymongo.ASCENDING)])
+    async def get_active_timer(self) -> TimerConfig | None:
+        timer = await self.timer_collection.find_one(sort=[("due_date", pymongo.ASCENDING)])
         return timer
 
-    async def wait_for_active_timer(self) -> TimerConfig | None:
+    async def wait_for_active_timers(self) -> TimerConfig | None:
         timer = await self.get_active_timer()
         if timer is not None:
             self._timer_event.set()
@@ -321,14 +321,14 @@ class Parrot(commands.Bot):  # pylint: disable=too-many-public-methods
 
         self._timer_event.clear()
         self._current_timer = None
-        _ = await self._timer_event.wait()
+        await self._timer_event.wait()
 
         return await self.get_active_timer()
 
     async def dispatch_timer(self):
         try:
             while not self.is_closed():
-                timer = self._current_timer = await self.wait_for_active_timer()
+                timer = self._current_timer = await self.wait_for_active_timers()
                 if timer is None:
                     continue
 
@@ -341,8 +341,6 @@ class Parrot(commands.Bot):  # pylint: disable=too-many-public-methods
                     continue
 
                 await self.call_timer(self._current_timer)
-
-                await asyncio.sleep(0.01)
 
         except (OSError, discord.ConnectionClosed, pymongo.errors.ConnectionFailure):
             if self.timer_task is not None:
@@ -366,12 +364,24 @@ class Parrot(commands.Bot):  # pylint: disable=too-many-public-methods
         wait_seconds = (timer["due_date"] - arrow.utcnow().datetime).total_seconds()
         await asyncio.sleep(wait_seconds)
 
-        await self.call_timer(timer)
+        self.dispatch(timer["event_name"], timer)
 
     async def create_timer(self, /, *, event_name: str, due_date: datetime.datetime, metadata: dict[str, Any]):
-        timer = TimerConfig(event_name=event_name, due_date=due_date, metadata=metadata, created_at=arrow.utcnow().datetime)
+        now = arrow.utcnow().datetime
+        timer = TimerConfig(event_name=event_name, due_date=due_date, metadata=metadata, created_at=now)
+        delta = (due_date - now).total_seconds()
+        if delta <= 60:
+            # Short Dispatch
+            self.loop.create_task(self.short_dispatcher(timer))
+            return timer
+
         _ = await self.timer_collection.insert_one(timer)
         self._timer_event.set()
+
+        if self._current_timer and due_date < self._current_timer["due_date"]:
+            if self.timer_task is not None:
+                _ = self.timer_task.cancel()
+                self.timer_task = self.loop.create_task(self.dispatch_timer())
 
         return timer
 

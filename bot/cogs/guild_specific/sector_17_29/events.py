@@ -12,9 +12,6 @@ from bot.core import Parrot
 
 SERVER_ID = 741614680652644382
 HUB_CHANNEL_ID = 1117355405497094214
-PARROT_CONNECT_CHANNEL_ID = 1116780108074713098
-
-MESSAGE_DELETE_LOGS = 1159562419232845935
 
 GENERAL_CHAT_ID = 1022211381031866459
 GENERAL_CHAT_NAME_PREFIX = "\N{BOX DRAWINGS LIGHT VERTICAL}\N{SPEECH BALLOON}\N{BOX DRAWINGS LIGHT VERTICAL}"
@@ -43,11 +40,6 @@ class Sector1729Events(commands.Cog):
     async def before_cycle_general_chat_name(self) -> None:
         await self.bot.wait_until_ready()
 
-    @property
-    def parrot_connect_channel(self) -> discord.VoiceChannel | None:
-        """Get the Parrot Connect voice channel."""
-        return cast(discord.VoiceChannel, self.bot.get_channel(PARROT_CONNECT_CHANNEL_ID))
-
     async def cog_load(self) -> None:
         guild = self.bot.get_guild(SERVER_ID)
         if guild is None:
@@ -57,13 +49,6 @@ class Sector1729Events(commands.Cog):
             await guild.chunk(cache=True)
 
         await self.cleanup_hub_voice_channels()
-        await self.join_parrot_hub()
-
-    async def join_parrot_hub(self):
-        if self.parrot_connect_channel is None:
-            return
-
-        await self.parrot_connect_channel.connect()
 
     async def cleanup_hub_voice_channels(self):
         guild = self.bot.get_guild(SERVER_ID)
@@ -102,11 +87,6 @@ class Sector1729Events(commands.Cog):
     def random_discord_fact(self) -> str:
         """Get a random Discord fact."""
         return random.choice(self.bot.assets.discord_facts)
-
-    @property
-    def message_delete_logs_channel(self) -> discord.TextChannel | None:
-        """Get the message delete logs text channel."""
-        return cast(discord.TextChannel, self.bot.get_channel(MESSAGE_DELETE_LOGS))
 
     @property
     def hub_channel(self) -> discord.VoiceChannel | None:
@@ -179,24 +159,6 @@ class Sector1729Events(commands.Cog):
         if isinstance(channel, discord.VoiceChannel):
             await channel.edit(user_limit=limit)
             await interaction.response.send_message(f"Set user limit for {channel.mention} to {limit}.", ephemeral=True)
-
-    @commands.Cog.listener(name="on_message_delete")
-    async def log_message_delete(self, message: discord.Message) -> None:
-        """Logs when a message is deleted."""
-        if message.guild and message.guild.id != SERVER_ID:
-            return
-
-        if self.message_delete_logs_channel is None:
-            return
-
-        if message.author.bot:
-            return
-
-        embed = discord.Embed(color=discord.Color.red(), description=message.content or "*No content*")
-
-        await self.message_delete_logs_channel.send(
-            content=f"{message.author} [{message.author.mention}] (`{message.author.id}`) **|** {message.channel} (`{message.channel.id}`)", embed=embed
-        )
 
 
 async def setup(bot: Parrot) -> None:
