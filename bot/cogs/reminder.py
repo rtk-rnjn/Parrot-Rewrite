@@ -25,12 +25,6 @@ class ReminderMetadata(TypedDict):
     content: str
 
 
-class MessageDeleteMetadata(TypedDict):
-    guild_id: int
-    channel_id: int
-    message_id: int
-
-
 class Reminders(commands.Cog):  # pylint: disable=too-many-public-methods
     """Reminder to do something."""
 
