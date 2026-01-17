@@ -11,6 +11,7 @@ from bot.core import Parrot
 
 SERVER_ID = 776415524056727582
 HUB_CHANNEL_ID = 1454728621720731718
+VOICE_LOGS = 1459476640223461533
 
 _2_HUB_CHANNEL_ID = 1455418262392406126
 _3_HUB_CHANNEL_ID = 1455418351739469926
@@ -61,6 +62,23 @@ class IndiaUnfilteredVoiceEvents(commands.Cog):
             return False
 
         return True
+
+    @commands.Cog.listener(name="on_voice_state_update")
+    async def log_voice_state_update(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState) -> None:
+        """Logs voice state updates."""
+        if member.guild.id != SERVER_ID:
+            return
+
+        voice_logs_channel = cast(discord.TextChannel, self.bot.get_channel(VOICE_LOGS))
+        if voice_logs_channel is None:
+            return
+
+        before_channel = before.channel.name if before.channel else "None"
+        after_channel = after.channel.name if after.channel else "None"
+
+        if before.channel != after.channel:
+            content = f"**{member}** moved from **{before_channel}** to **{after_channel}**."
+            await voice_logs_channel.send(content)
 
     @commands.Cog.listener(name="on_voice_state_update")
     async def hub_voice_state_update(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState) -> None:

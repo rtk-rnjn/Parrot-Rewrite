@@ -69,6 +69,7 @@ __all_cogs__ = [
     "bot.cogs.rtfm.rtfm",
     "bot.cogs.rtfm.linter",
     "bot.cogs.music",
+    "bot.cogs.reminder",
 ]
 # fmt: on
 
