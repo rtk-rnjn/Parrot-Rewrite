@@ -1,12 +1,27 @@
 from __future__ import annotations
 
-from typing import Annotated, Literal
+from typing import TYPE_CHECKING, Annotated, Literal
 
 import discord
 from discord.ext import commands
 
-from ...core.utils import time
-from ...core.utils.converters import convert_bool
+from bot.core.utils import time
+from bot.core.utils.converters import convert_bool
+
+if TYPE_CHECKING:
+    from bot.core import Context
+
+
+class Snowflake:
+    @classmethod
+    async def convert(cls, ctx: Context, argument: str) -> int:
+        try:
+            return int(argument)
+        except ValueError:
+            param = ctx.current_parameter
+            if param:
+                raise commands.BadArgument(f'{param.name} argument expected a Discord ID not {argument!r}')
+            raise commands.BadArgument(f'expected a Discord ID not {argument!r}')
 
 
 class AuditFlag(commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "):
@@ -23,8 +38,8 @@ class PurgeFlags(commands.FlagConverter, case_insensitive=True, prefix="--", del
     contains: str | None = commands.flag(description="Remove messages that contains this string (case sensitive)", default=None)
     prefix: str = commands.flag(description="Remove messages that start with this string (case sensitive)", default=None)
     suffix: str = commands.flag(description="Remove messages that end with this string (case sensitive)", default=None)
-    after: Annotated[int | None, discord.abc.Snowflake] = commands.flag(description="Search for messages that come after this message ID", default=None)
-    before: Annotated[int | None, discord.abc.Snowflake] = commands.flag(description="Search for messages that come before this message ID", default=None)
+    after: Annotated[int | None, Snowflake] = commands.flag(description="Search for messages that come after this message ID", default=None)
+    before: Annotated[int | None, Snowflake] = commands.flag(description="Search for messages that come before this message ID", default=None)
     bot: bool = commands.flag(description="Remove messages from bots (not webhooks!)", default=False)
     webhooks: bool = commands.flag(description="Remove messages from webhooks", default=False)
     embeds: bool = commands.flag(description="Remove messages that have embeds", default=False)
