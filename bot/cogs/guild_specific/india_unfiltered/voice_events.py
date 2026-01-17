@@ -5,7 +5,7 @@ from typing import cast
 import discord
 from discord import app_commands
 from discord.ext import commands
-from discord.utils import maybe_coroutine
+from discord.utils import maybe_coroutine, escape_markdown
 
 from bot.core import Parrot
 
@@ -73,19 +73,19 @@ class IndiaUnfilteredVoiceEvents(commands.Cog):
         if voice_logs_channel is None:
             return
 
-        user = f"**{member}** [{member.mention}] (`{member.id}`)"
+        user = escape_markdown(f"**{member}** [{member.mention}] (`{member.id}`)")
         before_channel, after_channel = None, None
         if before.channel is not None:
-            before_channel = f"**{before.channel.name}** (`{before.channel.id}`)"
+            before_channel = escape_markdown(f"**{before.channel.name}** (`{before.channel.id}`)")
         if after.channel is not None:
-            after_channel = f"**{after.channel.name}** (`{after.channel.id}`)"
+            after_channel = escape_markdown(f"**{after.channel.name}** (`{after.channel.id}`)")
 
         if before.channel is None and after.channel is not None:
             content = f":arrow_right: {user} _joined voice channel_ {after_channel}."
         elif after.channel is None and before.channel is not None:
             content = f":arrow_left: {user} _left voice channel_ {before_channel}."
         else:
-            if before.channel.id == after.channel.id:
+            if before.channel == after.channel:
                 # Happens on mute/deafen/etc. Ignore.
                 return
             content = f":arrows_counterclockwise: {user} _moved from voice channel_ {before_channel} _to_ {after_channel}."
