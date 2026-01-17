@@ -20,7 +20,7 @@ class IndiaUnfilteredChannelEvents(commands.Cog):
         self.bot = bot
         self.cycle_general_chat_name.start()
 
-    @tasks.loop(minutes=10)
+    @tasks.loop(minutes=45)
     async def cycle_general_chat_name(self) -> None:
         """Cycle the general chat channel name every 10 minutes."""
         if self.general_chat_channel is None:
