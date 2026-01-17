@@ -73,12 +73,21 @@ class IndiaUnfilteredVoiceEvents(commands.Cog):
         if voice_logs_channel is None:
             return
 
-        before_channel = before.channel.name if before.channel else "None"
-        after_channel = after.channel.name if after.channel else "None"
+        user = f"**{member}** [{member.mention}] (`{member.id}`)"
+        before_channel, after_channel = None, None
+        if before.channel is not None:
+            before_channel = f"**{before.channel.name}** (`{before.channel.id}`)"
+        if after.channel is not None:
+            after_channel = f"**{after.channel.name}** (`{after.channel.id}`)"
 
-        if before.channel != after.channel:
-            content = f"**{member}** moved from **{before_channel}** to **{after_channel}**."
-            await voice_logs_channel.send(content)
+        if before.channel is None:
+            content = f":arrow_right: {user} joined voice channel {after_channel}."
+        elif after.channel is None:
+            content = f":arrow_left: {user} left voice channel {before_channel}."
+        else:
+            content = f":arrows_counterclockwise: {user} moved from voice channel {before_channel} to {after_channel}."
+
+        await voice_logs_channel.send(content)
 
     @commands.Cog.listener(name="on_voice_state_update")
     async def hub_voice_state_update(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState) -> None:
