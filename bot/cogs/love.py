@@ -10,12 +10,13 @@ from random import choice
 
 import arrow
 import discord
-from core import Context, Parrot
 from discord import Member
 from discord.ext import commands
 
-LETTER_EMOJI = ":love_letter:"
-HEART_EMOJIS = [":heart:", ":gift_heart:", ":revolving_hearts:", ":sparkling_heart:", ":two_hearts:"]
+from bot.core import Context, Parrot
+
+LETTER_EMOJI = "\N{LOVE LETTER}"
+HEART_EMOJIS = ["\N{HEAVY BLACK HEART}", "\N{HEART WITH RIBBON}", "\N{REVOLVING HEARTS}", "\N{SPARKLING HEART}", "\N{TWO HEARTS}"]
 
 
 class Love(commands.Cog):
@@ -259,6 +260,7 @@ class Love(commands.Cog):
         embed.add_field(name="A letter from Dr. Love:", value=data["text"])
 
         await ctx.send(embed=embed)
+
 
 async def setup(bot: Parrot) -> None:
     """Loads the Love cog."""
