@@ -5,7 +5,7 @@ from typing import cast
 import discord
 from discord import app_commands
 from discord.ext import commands
-from discord.utils import maybe_coroutine, escape_markdown
+from discord.utils import escape_markdown, maybe_coroutine
 
 from bot.core import Parrot
 

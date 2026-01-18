@@ -70,6 +70,7 @@ __all_cogs__ = [
     "bot.cogs.rtfm.linter",
     "bot.cogs.music",
     "bot.cogs.reminder",
+    "bot.cogs.love",
 ]
 # fmt: on
 
