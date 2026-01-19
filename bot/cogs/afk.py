@@ -3,8 +3,9 @@ from __future__ import annotations
 from typing import Annotated
 
 import discord
-from bot.core import Context, Parrot
 from discord.ext import commands
+
+from bot.core import Context, Parrot
 
 
 class AFK(commands.Cog):
