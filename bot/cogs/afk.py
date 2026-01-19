@@ -7,8 +7,6 @@ from core import Context, Parrot
 from discord.ext import commands
 
 
-
-
 class AFK(commands.Cog):
     """AFK Management"""
 
@@ -17,11 +15,7 @@ class AFK(commands.Cog):
 
     async def set_afk(self, *, guild: discord.Guild, author: discord.Member, text: str):
         redis_key = f"afk:{guild.id}:{author.id}"
-        payload = {
-            "text": text,
-            "guild": guild.id,
-            "user_id": author.id,
-        }
+        payload = {"text": text, "guild": guild.id, "user_id": author.id}
 
         await discord.utils.maybe_coroutine(self.bot.redis_client.hset, redis_key, mapping=payload)
 
@@ -53,7 +47,7 @@ class AFK(commands.Cog):
     async def on_message(self, message: discord.Message) -> None:
         if message.author.bot:
             return
-        
+
         if message.guild is None:
             return
 
@@ -80,7 +74,7 @@ class AFK(commands.Cog):
     async def on_message_edit(self, before: discord.Message, after: discord.Message) -> None:
         if after.author.bot:
             return
-        
+
         if after.guild is None:
             return
 
@@ -106,6 +100,7 @@ class AFK(commands.Cog):
                 afk_data = await discord.utils.maybe_coroutine(self.bot.redis_client.hgetall, redis_key)
                 afk_text = afk_data.get("text", "AFK")
                 await message.channel.send(f"{message.author.mention}, {member.display_name} is currently AFK: {afk_text}", delete_after=10)
+
 
 async def setup(bot: Parrot) -> None:
     await bot.add_cog(AFK(bot))

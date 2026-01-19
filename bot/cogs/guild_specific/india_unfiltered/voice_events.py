@@ -6,6 +6,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 from discord.utils import escape_markdown, maybe_coroutine
+from parsedatetime.pdt_locales import es
 
 from bot.core import Parrot
 
@@ -73,12 +74,12 @@ class IndiaUnfilteredVoiceEvents(commands.Cog):
         if voice_logs_channel is None:
             return
 
-        user = escape_markdown(f"**{member}** [{member.mention}] (`{member.id}`)")
+        user = f"**{escape_markdown(member.display_name)}** [{member.mention}] (`{member.id}`)"
         before_channel, after_channel = None, None
         if before.channel is not None:
-            before_channel = escape_markdown(f"**{before.channel.name}** (`{before.channel.id}`)")
+            before_channel = (f"**{escape_markdown(before.channel.name)}** (`{before.channel.id}`)")
         if after.channel is not None:
-            after_channel = escape_markdown(f"**{after.channel.name}** (`{after.channel.id}`)")
+            after_channel = f"**{escape_markdown(after.channel.name)}** (`{after.channel.id}`)"
 
         if before.channel is None and after.channel is not None:
             content = f":arrow_right: {user} _joined voice channel_ {after_channel}."
