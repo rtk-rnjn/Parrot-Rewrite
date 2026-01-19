@@ -71,6 +71,7 @@ __all_cogs__ = [
     "bot.cogs.music",
     "bot.cogs.reminder",
     "bot.cogs.love",
+    "bot.cogs.afk",
 ]
 # fmt: on
 

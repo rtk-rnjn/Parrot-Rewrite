@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Annotated
 
 import discord
-from core import Context, Parrot
+from bot.core import Context, Parrot
 from discord.ext import commands
 
 
