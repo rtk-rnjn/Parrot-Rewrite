@@ -27,7 +27,7 @@ class PaginationView(discord.ui.View, Generic[PageT]):
         self._str_suffix = ""
 
     async def interaction_check(self, interaction: discord.Interaction[Parrot]) -> bool:
-        author = self.ctx.author if isinstance(self.ctx, Context) else self.ctx.user
+        author = self.ctx.author
         if author == interaction.user:
             return True
         await interaction.response.send_message(f"Only **{author}** can interact. Run the command if you want to.", ephemeral=True)
