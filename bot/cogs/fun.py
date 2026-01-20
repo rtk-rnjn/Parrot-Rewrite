@@ -635,10 +635,11 @@ class Fun(commands.Cog, ColorHandler):
             if not data["list"]:
                 return await ctx.send(f"No definition found for: `{term}`")
 
-            definition_data = data["list"][0]
-            definition = definition_data["definition"]
-            example = definition_data["example"]
-            result = f"**Definition of {term}:**\n{definition}\n\n**Example:**\n{example}"
+            results = data["list"]
+            for result in results:
+                definition = result["definition"]
+                example = result["example"]
+                result = f"**Definition of {term}:**\n{definition}\n\n**Example:**\n{example}"
 
             pages.append(result)
 
