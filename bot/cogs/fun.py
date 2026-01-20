@@ -622,16 +622,19 @@ class Fun(commands.Cog, ColorHandler):
         """Fetch a definition from Urban Dictionary."""
         await self.get_urban_definition(ctx, term)
 
-    async def get_urban_definition(self, ctx: Context[Parrot], term: str) -> str | None:
+    async def get_urban_definition(self, ctx: Context[Parrot], term: str):
         """Fetch a definition from Urban Dictionary API."""
-        url = f"https://api.urbandictionary.com/v0/efine?term={term}"
+        url = f"https://api.urbandictionary.com/v0/define?term={term}"
         pages: list[str] = []
+
         async with self.bot.http_session.get(url) as response:
             if response.status != 200:
-                return None
+                return await ctx.send("Failed to fetch definition from Urban Dictionary.")
+
             data = await response.json()
             if not data["list"]:
-                return None
+                return await ctx.send(f"No definition found for: `{term}`")
+
             definition_data = data["list"][0]
             definition = definition_data["definition"]
             example = definition_data["example"]
@@ -639,7 +642,7 @@ class Fun(commands.Cog, ColorHandler):
 
             pages.append(result)
 
-        await ctx.paginate(pages=pages)
+        return await ctx.paginate(pages=pages)
 
 
 async def setup(bot: Parrot) -> None:

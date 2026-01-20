@@ -26,7 +26,7 @@ class PaginationView(discord.ui.View, Generic[PageT]):
         self._str_prefix = ""
         self._str_suffix = ""
 
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+    async def interaction_check(self, interaction: discord.Interaction[Parrot]) -> bool:
         author = self.ctx.author if isinstance(self.ctx, Context) else self.ctx.user
         if author == interaction.user:
             return True
@@ -44,7 +44,7 @@ class PaginationView(discord.ui.View, Generic[PageT]):
         await self.message.edit(view=self)
 
     @discord.ui.button(label="First", style=discord.ButtonStyle.red, disabled=True)
-    async def first(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def first(self, interaction: discord.Interaction[Parrot], button: discord.ui.Button):
         self.current = 0
         self.count.label = f"Page {self.current + 1}/{len(self._pages)}"
 
@@ -62,7 +62,7 @@ class PaginationView(discord.ui.View, Generic[PageT]):
         await self.edit(interaction, current_entity)
 
     @discord.ui.button(label="Previous", style=discord.ButtonStyle.green, disabled=True)
-    async def previous(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def previous(self, interaction: discord.Interaction[Parrot], button: discord.ui.Button):
         self.current = self.current - 1
 
         if len(self._pages) >= 1:  # if list consists of 2 pages, if,
@@ -86,14 +86,14 @@ class PaginationView(discord.ui.View, Generic[PageT]):
         await self.edit(interaction, current_entity)
 
     @discord.ui.button(style=discord.ButtonStyle.blurple)
-    async def count(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def count(self, interaction: discord.Interaction[Parrot], button: discord.ui.Button):
         assert interaction.message is not None
 
         await interaction.message.delete()
         self.stop()
 
     @discord.ui.button(label="Next", style=discord.ButtonStyle.green, disabled=False)
-    async def next(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def next(self, interaction: discord.Interaction[Parrot], button: discord.ui.Button):
         self.current += 1
 
         if self.current >= len(self._pages) - 1:
@@ -114,7 +114,7 @@ class PaginationView(discord.ui.View, Generic[PageT]):
         await self.edit(interaction, current_entity)
 
     @discord.ui.button(label="Last", style=discord.ButtonStyle.red, disabled=False)
-    async def _last(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def _last(self, interaction: discord.Interaction[Parrot], button: discord.ui.Button):
         self.current = len(self._pages) - 1
         self.count.label = f"Page {self.current + 1}/{len(self._pages)}"
 
@@ -131,7 +131,7 @@ class PaginationView(discord.ui.View, Generic[PageT]):
         current_entity = self._pages[self.current]
         await self.edit(interaction, current_entity)
 
-    async def edit(self, interaction: discord.Interaction, current_entity: PageT) -> PageT:
+    async def edit(self, interaction: discord.Interaction[Parrot], current_entity: PageT) -> PageT:
         func = interaction.response.edit_message
 
         if isinstance(current_entity, discord.Embed):
@@ -184,7 +184,7 @@ class PaginationView(discord.ui.View, Generic[PageT]):
     @classmethod
     async def paginate_embed(cls, ctx: Context, embed_list: list[PageT]):
         paginator = cls(embed_list)
-        await paginator.start(ctx)
+        return await paginator.start(ctx)
 
     async def on_error(self, interaction: discord.Interaction[Parrot], exception: Exception, item: discord.ui.Item) -> None:
         bot: Parrot = self.ctx.bot if isinstance(self.ctx, Context) else self.ctx.client

@@ -105,7 +105,7 @@ class Context(commands.Context[BotT]):
         return await interface.send_to(self)
 
     async def paginate(self, *, pages: list[PageT]):
-        await PaginationView.paginate_embed(self, pages)
+        return await PaginationView.paginate_embed(self, pages)
 
     async def disambiguate(self, matches: list[T], entry: Callable[[T], Any], *, ephemeral: bool = False) -> T:
         if len(matches) == 0:
