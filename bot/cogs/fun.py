@@ -641,7 +641,7 @@ class Fun(commands.Cog, ColorHandler):
                 example = result["example"]
                 result = f"**Definition of {term}:**\n{definition}\n\n**Example:**\n{example}"
 
-            pages.append(result)
+                pages.append(result)
 
         return await ctx.paginate(pages=pages)
 
