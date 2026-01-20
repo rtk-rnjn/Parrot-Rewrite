@@ -111,9 +111,13 @@ class Sector1729Events(commands.Cog):
             return
 
         if after.channel == self.hub_channel:
-            new_channel = await member.guild.create_voice_channel(name=f"{member.display_name}", category=self.hub_channel.category, user_limit=5)
+            new_channel = await member.guild.create_voice_channel(
+                name=f"{member.display_name}", category=self.hub_channel.category, user_limit=5
+            )
             # Member should have all permissions in their own channel
-            overwrite = discord.PermissionOverwrite(manage_channels=True, manage_permissions=True, mute_members=True, deafen_members=True, connect=True, speak=True)
+            overwrite = discord.PermissionOverwrite(
+                manage_channels=True, manage_permissions=True, mute_members=True, deafen_members=True, connect=True, speak=True
+            )
 
             await new_channel.set_permissions(member, overwrite=overwrite)
             await maybe_coroutine(self.bot.redis_client.set, f"sector1729:hub_voice_channel:{member.id}", new_channel.id)

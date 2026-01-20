@@ -32,7 +32,12 @@ class Meta(commands.Cog):
     @commands.command(name="avatar", aliases=["av", "pfp"])
     @commands.has_permissions(embed_links=True)
     async def avatar_command(
-        self, ctx: Context[Parrot], *, member: discord.Member | None = commands.parameter(default=lambda ctx: ctx.author, description="The member to get the avatar of.")
+        self,
+        ctx: Context[Parrot],
+        *,
+        member: discord.Member | None = commands.parameter(
+            default=lambda ctx: ctx.author, description="The member to get the avatar of."
+        ),
     ) -> None:
         """Get the avatar of a user."""
         member = member or ctx.author
@@ -59,7 +64,12 @@ class Meta(commands.Cog):
     @commands.command(name="userinfo", aliases=["memberinfo", "ui", "mi"])
     @commands.cooldown(1, 5, commands.BucketType.member)
     async def user_info(
-        self, ctx: Context[Parrot], *, member: discord.Member = commands.parameter(default=commands.parameters.Author, description="The member whose info you want to see.")
+        self,
+        ctx: Context[Parrot],
+        *,
+        member: discord.Member = commands.parameter(
+            default=commands.parameters.Author, description="The member whose info you want to see."
+        ),
     ):
         """Get the basic stats about the user."""
         target = member or ctx.author
@@ -102,7 +112,9 @@ class Meta(commands.Cog):
         """Get the basic stats about the server."""
         guild = ctx.guild
         embed: discord.Embed = discord.Embed(
-            title=f"Server Info: {ctx.guild.name}", colour=(ctx.guild.owner.colour if ctx.guild.owner else discord.Colour.blurple()), timestamp=discord.utils.utcnow()
+            title=f"Server Info: {ctx.guild.name}",
+            colour=(ctx.guild.owner.colour if ctx.guild.owner else discord.Colour.blurple()),
+            timestamp=discord.utils.utcnow(),
         )
         if ctx.guild.icon:
             embed.set_thumbnail(url=ctx.guild.icon.url)
@@ -127,11 +139,28 @@ class Meta(commands.Cog):
                 ),
                 True,
             ),
-            ("Total channels", (f"Categories: {len(ctx.guild.categories)}\n" f"Text: {len(ctx.guild.text_channels)}\n" f"Voice:{len(ctx.guild.voice_channels)}"), True),
-            ("General", (f"Roles: {len(ctx.guild.roles)}\n" f"Emojis: {len(ctx.guild.emojis)}\n" f"Boost Level: {ctx.guild.premium_tier}"), True),
+            (
+                "Total channels",
+                (
+                    f"Categories: {len(ctx.guild.categories)}\n"
+                    f"Text: {len(ctx.guild.text_channels)}\n"
+                    f"Voice:{len(ctx.guild.voice_channels)}"
+                ),
+                True,
+            ),
+            (
+                "General",
+                (f"Roles: {len(ctx.guild.roles)}\n" f"Emojis: {len(ctx.guild.emojis)}\n" f"Boost Level: {ctx.guild.premium_tier}"),
+                True,
+            ),
             (
                 "Statuses",
-                (f":green_circle: {statuses[0]}\n" f":yellow_circle: {statuses[1]}\n" f":red_circle: {statuses[2]}\n" f":black_circle: {statuses[3]} [Blame Discord]"),
+                (
+                    f":green_circle: {statuses[0]}\n"
+                    f":yellow_circle: {statuses[1]}\n"
+                    f":red_circle: {statuses[2]}\n"
+                    f":black_circle: {statuses[3]} [Blame Discord]"
+                ),
                 True,
             ),
         ]

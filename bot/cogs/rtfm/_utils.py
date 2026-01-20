@@ -70,7 +70,16 @@ MINIMUM_CERTAINTY = 55
 TIMEOUT = 120
 BOOKMARK_EMOJI = "\N{PUSHPIN}"
 
-MAPPING_OF_KYU: dict[int, int] = {8: 0xDDDBDA, 7: 0xDDDBDA, 6: 0xECB613, 5: 0xECB613, 4: 0x3C7EBB, 3: 0x3C7EBB, 2: 0x866CC7, 1: 0x866CC7}
+MAPPING_OF_KYU: dict[int, int] = {
+    8: 0xDDDBDA,
+    7: 0xDDDBDA,
+    6: 0xECB613,
+    5: 0xECB613,
+    4: 0x3C7EBB,
+    3: 0x3C7EBB,
+    2: 0x866CC7,
+    1: 0x866CC7,
+}
 
 SUPPORTED_LANGUAGES: dict[str, list[str]] = {
     "stable": [
@@ -149,12 +158,20 @@ class InformationDropdown(discord.ui.Select):
 
     original_message: discord.Message
 
-    def __init__(self, language_embed: discord.Embed, tags_embed: discord.Embed, other_info_embed: discord.Embed, main_embed: discord.Embed) -> None:
+    def __init__(
+        self, language_embed: discord.Embed, tags_embed: discord.Embed, other_info_embed: discord.Embed, main_embed: discord.Embed
+    ) -> None:
         options: list[discord.SelectOption] = [
-            discord.SelectOption(label="Main Information", description="See the kata's difficulty, description, etc.", emoji="\N{EARTH GLOBE AMERICAS}"),
+            discord.SelectOption(
+                label="Main Information", description="See the kata's difficulty, description, etc.", emoji="\N{EARTH GLOBE AMERICAS}"
+            ),
             discord.SelectOption(label="Languages", description="See what languages this kata supports!", emoji="\N{PAGE FACING UP}"),
             discord.SelectOption(label="Tags", description="See what categories this kata falls under!", emoji="\N{ROUND PUSHPIN}"),
-            discord.SelectOption(label="Other Information", description="See how other people performed on this kata and more!", emoji="\N{INFORMATION SOURCE}"),
+            discord.SelectOption(
+                label="Other Information",
+                description="See how other people performed on this kata and more!",
+                emoji="\N{INFORMATION SOURCE}",
+            ),
         ]
 
         # We map the option label to the embed instance so that it can be easily looked up later in O(1)

@@ -23,49 +23,63 @@ class Linter(commands.Cog):
 
     @lintcode.command(name="flake8", aliases=["f8", "flake"])
     @commands.max_concurrency(1, commands.BucketType.user)
-    async def lintcode_flake8(self, ctx: Context[Parrot], *, flag: Flake8Converter = commands.parameter(description="The code or flags to lint with flake8.")):
+    async def lintcode_flake8(
+        self, ctx: Context[Parrot], *, flag: Flake8Converter = commands.parameter(description="The code or flags to lint with flake8.")
+    ):
         """Lint code with flake8."""
         linter = LintCode(flag).set_linttype("flake8")
         await linter.lint(ctx)
 
     @commands.command(name="flake8", aliases=["f8", "flake"])
     @commands.max_concurrency(1, commands.BucketType.user)
-    async def lintcode_flake8_shortcut(self, ctx: Context[Parrot], *, code: str = commands.parameter(description="The code to lint with flake8.")):
+    async def lintcode_flake8_shortcut(
+        self, ctx: Context[Parrot], *, code: str = commands.parameter(description="The code to lint with flake8.")
+    ):
         """Shortcut for `lintcode flake8` with no flags, just the code."""
         linter = LintCode(code).set_linttype("flake8")
         await linter.lint_with_flake8(ctx)
 
     @lintcode.command(name="pylint", aliases=["pyl"])
     @commands.max_concurrency(1, commands.BucketType.user)
-    async def lintcode_pylint(self, ctx: Context[Parrot], *, flag: PyLintConverter = commands.parameter(description="The code or flags to lint with pylint.")):
+    async def lintcode_pylint(
+        self, ctx: Context[Parrot], *, flag: PyLintConverter = commands.parameter(description="The code or flags to lint with pylint.")
+    ):
         """Lint code with pylint."""
         linter = LintCode(flag).set_linttype("pylint")
         await linter.lint(ctx)
 
     @commands.command(name="pylint", aliases=["pyl"])
     @commands.max_concurrency(1, commands.BucketType.user)
-    async def lintcode_pylint_shortcut(self, ctx: Context[Parrot], *, code: str = commands.parameter(description="The code to lint with pylint.")):
+    async def lintcode_pylint_shortcut(
+        self, ctx: Context[Parrot], *, code: str = commands.parameter(description="The code to lint with pylint.")
+    ):
         """Shortcut for `lintcode pylint` with no flags, just the code."""
         linter = LintCode(code).set_linttype("pylint")
         await linter.lint_with_pylint(ctx)
 
     @lintcode.command(name="mypy", aliases=["mp"])
     @commands.max_concurrency(1, commands.BucketType.user)
-    async def lintcode_mypy(self, ctx: Context[Parrot], *, flag: MypyConverter = commands.parameter(description="The code or flags to lint with mypy.")):
+    async def lintcode_mypy(
+        self, ctx: Context[Parrot], *, flag: MypyConverter = commands.parameter(description="The code or flags to lint with mypy.")
+    ):
         """Lint code with mypy."""
         linter = LintCode(flag).set_linttype("mypy")
         await linter.lint(ctx)
 
     @lintcode.command(name="bandit", aliases=["bd"])
     @commands.max_concurrency(1, commands.BucketType.user)
-    async def lintcode_bandit(self, ctx: Context[Parrot], *, flag: BanditConverter = commands.parameter(description="The code or flags to lint with bandit.")):
+    async def lintcode_bandit(
+        self, ctx: Context[Parrot], *, flag: BanditConverter = commands.parameter(description="The code or flags to lint with bandit.")
+    ):
         """Lint code with bandit."""
         linter = LintCode(flag).set_linttype("bandit")
         await linter.lint(ctx)
 
     @commands.command(name="bandit", aliases=["bd"])
     @commands.max_concurrency(1, commands.BucketType.user)
-    async def lintcode_bandit_shortcut(self, ctx: Context[Parrot], *, code: str = commands.parameter(description="The code to lint with bandit.")):
+    async def lintcode_bandit_shortcut(
+        self, ctx: Context[Parrot], *, code: str = commands.parameter(description="The code to lint with bandit.")
+    ):
         """Shortcut for `lintcode bandit` with no flags, just the code."""
         linter = LintCode(code).set_linttype("bandit")
         await linter.lint_with_bandit(ctx)
@@ -79,7 +93,9 @@ class Linter(commands.Cog):
 
     @lintcode.command(name="black_isort", aliases=["fmt_isort"])
     @commands.max_concurrency(1, commands.BucketType.user)
-    async def black_isort(self, ctx: Context[Parrot], *, code: str = commands.parameter(description="The code to format with black and isort.")):
+    async def black_isort(
+        self, ctx: Context[Parrot], *, code: str = commands.parameter(description="The code to format with black and isort.")
+    ):
         """Format code with black and isort."""
         linter = LintCode(code)
         await linter.run_isort_with_black(ctx)
@@ -107,21 +123,30 @@ class Linter(commands.Cog):
 
     @lintcode.command(name="pyright", aliases=["pyr"])
     @commands.max_concurrency(1, commands.BucketType.user)
-    async def pyright(self, ctx: Context[Parrot], *, code: PyrightConverter = commands.parameter(description="The code or flags to lint with pyright.")):
+    async def pyright(
+        self,
+        ctx: Context[Parrot],
+        *,
+        code: PyrightConverter = commands.parameter(description="The code or flags to lint with pyright."),
+    ):
         """Lint code with pyright."""
         linter = LintCode(code).set_linttype("pyright")
         await linter.lint(ctx)
 
     @commands.command(name="pyright", aliases=["pyr"])
     @commands.max_concurrency(1, commands.BucketType.user)
-    async def pyright_shortcut(self, ctx: Context[Parrot], *, code: str = commands.parameter(description="The code to lint with pyright.")):
+    async def pyright_shortcut(
+        self, ctx: Context[Parrot], *, code: str = commands.parameter(description="The code to lint with pyright.")
+    ):
         """Shortcut for `lintcode pyright` with no flags, just the code."""
         linter = LintCode(code).set_linttype("pyright")
         await linter.lint_with_pyright(ctx)
 
     @lintcode.command(name="ruff", aliases=["rf"])
     @commands.max_concurrency(1, commands.BucketType.user)
-    async def ruff(self, ctx: Context[Parrot], *, flag: RuffConverter = commands.parameter(description="The code or flags to lint with ruff.")):
+    async def ruff(
+        self, ctx: Context[Parrot], *, flag: RuffConverter = commands.parameter(description="The code or flags to lint with ruff.")
+    ):
         """Lint code with ruff."""
         linter = LintCode(flag).set_linttype("ruff")
         await linter.lint(ctx)

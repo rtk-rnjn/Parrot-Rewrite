@@ -45,7 +45,9 @@ class Reminders(commands.Cog):  # pylint: disable=too-many-public-methods
                 await ctx.send(f"Your current timezone is set to {tz!r}.")
 
     @timezone.command(name="set")
-    async def timezone_set(self, ctx: Context[Parrot], *, timezone: TimeZone = commands.parameter(description="The timezone to set.")) -> None:
+    async def timezone_set(
+        self, ctx: Context[Parrot], *, timezone: TimeZone = commands.parameter(description="The timezone to set.")
+    ) -> None:
         """Set your timezone.
 
         Timezones can be in the format specified by the IANA Time Zone Database, e.g. `America/New_York`, `Europe/London`, `Asia/Tokyo`, etc.
@@ -64,10 +66,14 @@ class Reminders(commands.Cog):  # pylint: disable=too-many-public-methods
         if utc_offset is not None:
             hours, remainder = divmod(utc_offset.total_seconds(), 3600)
             minutes = remainder // 60
-            await ctx.send(f"Your timezone has been set to {timezone.key!r} (UTC{'+' if hours >= 0 else ''}{int(hours):02}:{int(minutes):02}).")
+            await ctx.send(
+                f"Your timezone has been set to {timezone.key!r} (UTC{'+' if hours >= 0 else ''}{int(hours):02}:{int(minutes):02})."
+            )
 
     @timezone.command(name="info", aliases=["get", "details", "about", "more"])
-    async def timezone_info(self, ctx: Context[Parrot], *, timezone: TimeZone = commands.parameter(description="The timezone to get info about.")) -> None:
+    async def timezone_info(
+        self, ctx: Context[Parrot], *, timezone: TimeZone = commands.parameter(description="The timezone to get info about.")
+    ) -> None:
         """Get information about a timezone."""
         tz = dateutil.tz.gettz(timezone.key)
         if tz is None:
@@ -92,7 +98,12 @@ class Reminders(commands.Cog):  # pylint: disable=too-many-public-methods
             await ctx.send_help(ctx.command)
 
     @reminder.command(name="create", aliases=["add", "new", "touch", "set", "make", "me"])
-    async def reminder_create(self, ctx: Context[Parrot], *, when: Annotated[time.FriendlyTimeResult, time.UserFriendlyTime(commands.clean_content, default="…")]):
+    async def reminder_create(
+        self,
+        ctx: Context[Parrot],
+        *,
+        when: Annotated[time.FriendlyTimeResult, time.UserFriendlyTime(commands.clean_content, default="…")],
+    ):
         """Reminds you of something after a certain amount of time.
 
         The input can be any direct date (e.g. YYYY-MM-DD) or a human
@@ -123,7 +134,9 @@ class Reminders(commands.Cog):  # pylint: disable=too-many-public-methods
 
         due_date = arrow.get(due_date).replace(tzinfo=user_tz).datetime
 
-        metadata = ReminderMetadata(user_id=ctx.author.id, guild_id=ctx.guild.id, channel_id=ctx.channel.id, message_id=ctx.message.id, content=when.arg)
+        metadata = ReminderMetadata(
+            user_id=ctx.author.id, guild_id=ctx.guild.id, channel_id=ctx.channel.id, message_id=ctx.message.id, content=when.arg
+        )
         await self.bot.create_timer(due_date=due_date, event_name="reminder_complete", metadata=dict(metadata))
 
         remaining_time = discord.utils.format_dt(due_date, "R")
@@ -149,7 +162,10 @@ class Reminders(commands.Cog):  # pylint: disable=too-many-public-methods
 
         assert isinstance(channel, discord.abc.Messageable)
 
-        await channel.send(f"{user.mention}, this is your reminder: {metadata['content']}", reference=discord.PartialMessage(channel=channel, id=metadata["message_id"]))
+        await channel.send(
+            f"{user.mention}, this is your reminder: {metadata['content']}",
+            reference=discord.PartialMessage(channel=channel, id=metadata["message_id"]),
+        )
 
 
 async def setup(bot: Parrot) -> None:

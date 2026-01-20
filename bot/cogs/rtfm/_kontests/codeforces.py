@@ -164,7 +164,11 @@ class CodeForces:
         return contests
 
     def custom_search(
-        self, *, phase: Literal["BEFORE", "CODING", "PENDING_SYSTEM_TEST", "SYSTEM_TEST", "FINISHED"] | None = None, gym: bool = False, difficulty: int | None = None
+        self,
+        *,
+        phase: Literal["BEFORE", "CODING", "PENDING_SYSTEM_TEST", "SYSTEM_TEST", "FINISHED"] | None = None,
+        gym: bool = False,
+        difficulty: int | None = None,
     ) -> list[CodeForcesContestData]:
         contests = self.__gym if gym else self.__contests
         if phase is not None:

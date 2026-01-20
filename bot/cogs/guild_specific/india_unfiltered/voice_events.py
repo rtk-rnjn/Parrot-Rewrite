@@ -6,7 +6,6 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 from discord.utils import escape_markdown, maybe_coroutine
-from parsedatetime.pdt_locales import es
 
 from bot.core import Parrot
 
@@ -142,7 +141,9 @@ class IndiaUnfilteredVoiceEvents(commands.Cog):
             user_limit=user_limit or discord.utils.MISSING,
             reason=f"Creating hub voice channel for: {member} ({member.id})",
         )
-        overwrite = discord.PermissionOverwrite(manage_channels=True, manage_permissions=True, mute_members=True, deafen_members=True, connect=True, speak=True)
+        overwrite = discord.PermissionOverwrite(
+            manage_channels=True, manage_permissions=True, mute_members=True, deafen_members=True, connect=True, speak=True
+        )
 
         await new_channel.set_permissions(member, overwrite=overwrite)
         await maybe_coroutine(self.bot.redis_client.set, f"india_unfiltered:hub_voice_channel:{member.id}", new_channel.id)

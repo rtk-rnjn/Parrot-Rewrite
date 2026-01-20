@@ -13,7 +13,9 @@ from discord.ext import commands
 from bot.core import Parrot
 
 GITHUB_RE = re.compile(
-    r"https://github\.com/(?P<repo>[a-zA-Z0-9-]+/[\w.-]+)/blob/" r"(?P<path>[^#>]+)(\?[^#>]+)?(#L(?P<start_line>\d+)(([-~:]|(\.\.))L(?P<end_line>\d+))?)", re.IGNORECASE
+    r"https://github\.com/(?P<repo>[a-zA-Z0-9-]+/[\w.-]+)/blob/"
+    r"(?P<path>[^#>]+)(\?[^#>]+)?(#L(?P<start_line>\d+)(([-~:]|(\.\.))L(?P<end_line>\d+))?)",
+    re.IGNORECASE,
 )
 
 GITHUB_GIST_RE = re.compile(
@@ -23,10 +25,15 @@ GITHUB_GIST_RE = re.compile(
     re.IGNORECASE,
 )
 
-GITLAB_RE = re.compile(r"https://gitlab\.com/(?P<repo>[\w.-]+/[\w.-]+)/\-/blob/(?P<path>[^#>]+)" r"(\?[^#>]+)?(#L(?P<start_line>\d+)(-(?P<end_line>\d+))?)", re.IGNORECASE)
+GITLAB_RE = re.compile(
+    r"https://gitlab\.com/(?P<repo>[\w.-]+/[\w.-]+)/\-/blob/(?P<path>[^#>]+)"
+    r"(\?[^#>]+)?(#L(?P<start_line>\d+)(-(?P<end_line>\d+))?)",
+    re.IGNORECASE,
+)
 
 BITBUCKET_RE = re.compile(
-    r"https://bitbucket\.org/(?P<repo>[a-zA-Z0-9-]+/[\w.-]+)/src/(?P<ref>[0-9a-zA-Z]+)" r"/(?P<file_path>[^#>]+)(\?[^#>]+)?(#lines-(?P<start_line>\d+)(:(?P<end_line>\d+))?)",
+    r"https://bitbucket\.org/(?P<repo>[a-zA-Z0-9-]+/[\w.-]+)/src/(?P<ref>[0-9a-zA-Z]+)"
+    r"/(?P<file_path>[^#>]+)(\?[^#>]+)?(#lines-(?P<start_line>\d+)(:(?P<end_line>\d+))?)",
     re.IGNORECASE,
 )
 
@@ -74,10 +81,14 @@ class LinkToCodeblock(commands.Cog, command_attrs={"hidden": True}):
         refs = branches + tags
         ref, file_path = self._find_ref(path, refs)
 
-        file_contents = await self._fetch_response(f"https://api.github.com/repos/{repo}/contents/{file_path}?ref={ref}", "text", headers=GITHUB_HEADERS)
+        file_contents = await self._fetch_response(
+            f"https://api.github.com/repos/{repo}/contents/{file_path}?ref={ref}", "text", headers=GITHUB_HEADERS
+        )
         return self._snippet_to_codeblock(file_contents, file_path, start_line, end_line)
 
-    async def _fetch_github_gist_snippet(self, gist_id: str, revision: str, file_path: str, start_line: str | int | None, end_line: str | int | None) -> str:
+    async def _fetch_github_gist_snippet(
+        self, gist_id: str, revision: str, file_path: str, start_line: str | int | None, end_line: str | int | None
+    ) -> str:
         """Fetches a snippet from a GitHub gist."""
         gist_json: dict | None = await self._fetch_response(
             f'https://api.github.com/gists/{gist_id}{f"/{revision}" if revision != "" else ""}', "json", headers=GITHUB_HEADERS
@@ -105,15 +116,21 @@ class LinkToCodeblock(commands.Cog, command_attrs={"hidden": True}):
         enc_ref = quote_plus(ref)
         enc_file_path = quote_plus(file_path)
 
-        file_contents = await self._fetch_response(f"https://gitlab.com/api/v4/projects/{enc_repo}/repository/files/{enc_file_path}/raw?ref={enc_ref}", "text")
+        file_contents = await self._fetch_response(
+            f"https://gitlab.com/api/v4/projects/{enc_repo}/repository/files/{enc_file_path}/raw?ref={enc_ref}", "text"
+        )
         return self._snippet_to_codeblock(file_contents, file_path, start_line, end_line)
 
     async def _fetch_bitbucket_snippet(self, repo: str, ref: str, file_path: str, start_line: str, end_line: str) -> str:
         """Fetches a snippet from a BitBucket repo."""
-        file_contents = await self._fetch_response(f"https://bitbucket.org/{quote_plus(repo)}/raw/{quote_plus(ref)}/{quote_plus(file_path)}", "text")
+        file_contents = await self._fetch_response(
+            f"https://bitbucket.org/{quote_plus(repo)}/raw/{quote_plus(ref)}/{quote_plus(file_path)}", "text"
+        )
         return self._snippet_to_codeblock(file_contents, file_path, start_line, end_line)
 
-    def _snippet_to_codeblock(self, file_contents: Any | None, file_path: str, start_line: str | int | None, end_line: str | int | None) -> str:
+    def _snippet_to_codeblock(
+        self, file_contents: Any | None, file_path: str, start_line: str | int | None, end_line: str | int | None
+    ) -> str:
         """Given the entire file contents and target lines, creates a code block.
         First, we split the file contents into a list of lines and then keep and join only the required
         ones together.

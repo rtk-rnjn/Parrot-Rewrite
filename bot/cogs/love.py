@@ -100,7 +100,9 @@ class Love(commands.Cog):
     @commands.command(aliases=["saintvalentine"])
     async def whoisvalentine(self, ctx: Context):
         """Displays info about Saint Valentine."""
-        embed = discord.Embed(title="Who is Saint Valentine?", description=self.bot.assets.valentine_facts["whois"], color=ctx.author.color)
+        embed = discord.Embed(
+            title="Who is Saint Valentine?", description=self.bot.assets.valentine_facts["whois"], color=ctx.author.color
+        )
         embed.set_thumbnail(
             url="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Saint_Valentine_-_facial_reconstruction.jpg/1024px-Saint_Valentine_-_facial_reconstruction.jpg"
         )
@@ -110,7 +112,11 @@ class Love(commands.Cog):
     @commands.command(aliases=["valentine-fact"])
     async def valentinefact(self, ctx: Context) -> None:
         """Shows a random fact about Valentine's Day."""
-        embed = discord.Embed(title=choice(self.bot.assets.valentine_facts["titles"]), description=choice(self.bot.assets.valentine_facts["text"]), color=ctx.author.color)
+        embed = discord.Embed(
+            title=choice(self.bot.assets.valentine_facts["titles"]),
+            description=choice(self.bot.assets.valentine_facts["text"]),
+            color=ctx.author.color,
+        )
 
         await ctx.send(embed=embed)
 
@@ -156,7 +162,8 @@ class Love(commands.Cog):
             emoji2 = random.choice(HEART_EMOJIS)
             embed.title = "Zodiac Compatibility"
             embed.description = (
-                f"{zodiac_sign.capitalize()}{emoji1}{compatible_zodiac['Zodiac']}\n" f"{emoji2}Compatibility meter : {compatible_zodiac['compatibility_score']}{emoji2}"
+                f"{zodiac_sign.capitalize()}{emoji1}{compatible_zodiac['Zodiac']}\n"
+                f"{emoji2}Compatibility meter : {compatible_zodiac['compatibility_score']}{emoji2}"
             )
             embed.add_field(name=f"A letter from Dr.Zodiac {LETTER_EMOJI}", value=compatible_zodiac["description"])
         else:
@@ -169,7 +176,11 @@ class Love(commands.Cog):
         random_date = random.choice(self.bot.assets.valentines_date_ideas)
         emoji_1 = random.choice(HEART_EMOJIS)
         emoji_2 = random.choice(HEART_EMOJIS)
-        embed = discord.Embed(title=f"{emoji_1}{random_date['name']}{emoji_2}", description=f"{random_date['description']}", colour=discord.Color.dark_purple())
+        embed = discord.Embed(
+            title=f"{emoji_1}{random_date['name']}{emoji_2}",
+            description=f"{random_date['description']}",
+            colour=discord.Color.dark_purple(),
+        )
         await ctx.send(embed=embed)
 
     @commands.command()
@@ -210,7 +221,11 @@ class Love(commands.Cog):
             embed_title = "You have a true match!"
             embed_text = "This state is your true Valenstate! There are no states that would suit" " you better"
 
-        embed = discord.Embed(title=f"Your Valenstate is {valenstate} \u2764", description=self.bot.assets.valenstates[valenstate]["text"], colour=ctx.author.color)
+        embed = discord.Embed(
+            title=f"Your Valenstate is {valenstate} \u2764",
+            description=self.bot.assets.valenstates[valenstate]["text"],
+            colour=ctx.author.color,
+        )
         embed.add_field(name=embed_title, value=embed_text)
         embed.set_image(url=self.bot.assets.valenstates[valenstate]["flag"])
         await ctx.send(embed=embed)
@@ -256,7 +271,11 @@ class Love(commands.Cog):
         _, data = self.love_data[index]
 
         status = random.choice(data["titles"])
-        embed = discord.Embed(title=status, description=f"{who} \N{HEAVY BLACK HEART} {whom} scored {love_percent}%!\n\u200b", color=discord.Color.dark_magenta())
+        embed = discord.Embed(
+            title=status,
+            description=f"{who} \N{HEAVY BLACK HEART} {whom} scored {love_percent}%!\n\u200b",
+            color=discord.Color.dark_magenta(),
+        )
         embed.add_field(name="A letter from Dr. Love:", value=data["text"])
 
         await ctx.send(embed=embed)

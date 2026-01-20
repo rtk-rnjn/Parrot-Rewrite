@@ -10,39 +10,65 @@ from ...core.utils.converters import convert_bool
 class MypyConverter(commands.FlagConverter, case_insensitive=True, delimiter=" ", prefix="--"):
     code: str = commands.flag(description="The code to lint with mypy.")
     # Import Discovery
-    no_namespace_packages: Annotated[bool | None, convert_bool] = commands.flag(description="Do not consider namespace packages when searching for imports.", default=None)
+    no_namespace_packages: Annotated[bool | None, convert_bool] = commands.flag(
+        description="Do not consider namespace packages when searching for imports.", default=None
+    )
     ignore_missing_imports: Annotated[bool | None, convert_bool] = commands.flag(description="Ignore missing imports.", default=None)
-    follow_imports: Literal["skip", "silent", "error", "normal"] = commands.flag(description="How to handle imports.", default="normal")
+    follow_imports: Literal["skip", "silent", "error", "normal"] = commands.flag(
+        description="How to handle imports.", default="normal"
+    )
     no_site_packages: Annotated[bool | None, convert_bool] = commands.flag(description="Do not include site packages.", default=None)
-    no_silence_site_packages: Annotated[bool | None, convert_bool] = commands.flag(description="Do not silence site packages.", default=None)
+    no_silence_site_packages: Annotated[bool | None, convert_bool] = commands.flag(
+        description="Do not silence site packages.", default=None
+    )
 
     # Disallow dynamic typing
-    disallow_any_unimported: Annotated[bool | None, convert_bool] = commands.flag(description="Disallow unimported modules.", default=None)
+    disallow_any_unimported: Annotated[bool | None, convert_bool] = commands.flag(
+        description="Disallow unimported modules.", default=None
+    )
     disallow_any_expr: Annotated[bool | None, convert_bool] = commands.flag(description="Disallow any expression.", default=None)
-    disallow_any_decorated: Annotated[bool | None, convert_bool] = commands.flag(description="Disallow any decorated function.", default=None)
-    disallow_any_explicit: Annotated[bool | None, convert_bool] = commands.flag(description="Disallow any explicit type.", default=None)
+    disallow_any_decorated: Annotated[bool | None, convert_bool] = commands.flag(
+        description="Disallow any decorated function.", default=None
+    )
+    disallow_any_explicit: Annotated[bool | None, convert_bool] = commands.flag(
+        description="Disallow any explicit type.", default=None
+    )
 
     disallow_any_generics: Annotated[bool | None, convert_bool] = commands.flag(description="Disallow any generics.", default=None)
     allow_any_generics: Annotated[bool | None, convert_bool] = commands.flag(description="Allow any generics.", default=None)
 
-    disallow_subclassing_any: Annotated[bool | None, convert_bool] = commands.flag(description="Disallow subclassing of Any.", default=None)
+    disallow_subclassing_any: Annotated[bool | None, convert_bool] = commands.flag(
+        description="Disallow subclassing of Any.", default=None
+    )
     allow_subclassing_any: Annotated[bool | None, convert_bool] = commands.flag(description="Allow subclassing of Any.", default=None)
 
     # Untyped definitions and calls
     disallow_untyped_calls: Annotated[bool | None, convert_bool] = commands.flag(description="Disallow untyped calls.", default=None)
     allow_untyped_calls: Annotated[bool | None, convert_bool] = commands.flag(description="Allow untyped calls.", default=None)
 
-    disallow_untyped_defs: Annotated[bool | None, convert_bool] = commands.flag(description="Disallow untyped definitions.", default=None)
+    disallow_untyped_defs: Annotated[bool | None, convert_bool] = commands.flag(
+        description="Disallow untyped definitions.", default=None
+    )
     allow_untyped_defs: Annotated[bool | None, convert_bool] = commands.flag(description="Allow untyped definitions.", default=None)
 
-    disallow_incomplete_defs: Annotated[bool | None, convert_bool] = commands.flag(description="Disallow incomplete definitions.", default=None)
-    allow_incomplete_defs: Annotated[bool | None, convert_bool] = commands.flag(description="Allow incomplete definitions.", default=None)
+    disallow_incomplete_defs: Annotated[bool | None, convert_bool] = commands.flag(
+        description="Disallow incomplete definitions.", default=None
+    )
+    allow_incomplete_defs: Annotated[bool | None, convert_bool] = commands.flag(
+        description="Allow incomplete definitions.", default=None
+    )
 
     check_untyped_defs: Annotated[bool | None, convert_bool] = commands.flag(description="Check untyped definitions.", default=None)
-    no_check_untyped_defs: Annotated[bool | None, convert_bool] = commands.flag(description="Do not check untyped definitions.", default=None)
+    no_check_untyped_defs: Annotated[bool | None, convert_bool] = commands.flag(
+        description="Do not check untyped definitions.", default=None
+    )
 
-    disallow_untyped_decorators: Annotated[bool | None, convert_bool] = commands.flag(description="Disallow untyped decorators.", default=None)
-    allow_untyped_decorators: Annotated[bool | None, convert_bool] = commands.flag(description="Allow untyped decorators.", default=None)
+    disallow_untyped_decorators: Annotated[bool | None, convert_bool] = commands.flag(
+        description="Disallow untyped decorators.", default=None
+    )
+    allow_untyped_decorators: Annotated[bool | None, convert_bool] = commands.flag(
+        description="Allow untyped decorators.", default=None
+    )
 
     # None and Optional handling
     implicit_optional: Annotated[bool | None, convert_bool] = commands.flag(description="Enable implicit Optional.", default=None)
@@ -53,23 +79,37 @@ class MypyConverter(commands.FlagConverter, case_insensitive=True, delimiter=" "
 
     # Configuring warnings
     warn_redunant_casts: Annotated[bool | None, convert_bool] = commands.flag(description="Warn about redundant casts.", default=None)
-    no_warn_redunant_casts: Annotated[bool | None, convert_bool] = commands.flag(description="Do not warn about redundant casts.", default=None)
+    no_warn_redunant_casts: Annotated[bool | None, convert_bool] = commands.flag(
+        description="Do not warn about redundant casts.", default=None
+    )
 
     warn_unused_ignores: Annotated[bool | None, convert_bool] = commands.flag(description="Warn about unused ignores.", default=None)
-    no_warn_unused_ignores: Annotated[bool | None, convert_bool] = commands.flag(description="Do not warn about unused ignores.", default=None)
+    no_warn_unused_ignores: Annotated[bool | None, convert_bool] = commands.flag(
+        description="Do not warn about unused ignores.", default=None
+    )
 
-    no_warn_no_return: Annotated[bool | None, convert_bool] = commands.flag(description="Do not warn about missing return statements.", default=None)
-    warn_no_return: Annotated[bool | None, convert_bool] = commands.flag(description="Warn about missing return statements.", default=None)
+    no_warn_no_return: Annotated[bool | None, convert_bool] = commands.flag(
+        description="Do not warn about missing return statements.", default=None
+    )
+    warn_no_return: Annotated[bool | None, convert_bool] = commands.flag(
+        description="Warn about missing return statements.", default=None
+    )
 
     warn_return_any: Annotated[bool | None, convert_bool] = commands.flag(description="Warn about returning Any.", default=None)
-    no_warn_return_any: Annotated[bool | None, convert_bool] = commands.flag(description="Do not warn about returning Any.", default=None)
+    no_warn_return_any: Annotated[bool | None, convert_bool] = commands.flag(
+        description="Do not warn about returning Any.", default=None
+    )
 
     warn_unreachable: Annotated[bool | None, convert_bool] = commands.flag(description="Warn about unreachable code.", default=None)
-    no_warn_unreachable: Annotated[bool | None, convert_bool] = commands.flag(description="Do not warn about unreachable code.", default=None)
+    no_warn_unreachable: Annotated[bool | None, convert_bool] = commands.flag(
+        description="Do not warn about unreachable code.", default=None
+    )
 
     # Miscellaneous strictness flags
     allow_untyped_globals: Annotated[bool | None, convert_bool] = commands.flag(description="Allow untyped globals.", default=None)
-    disallow_untyped_globals: Annotated[bool | None, convert_bool] = commands.flag(description="Disallow untyped globals.", default=None)
+    disallow_untyped_globals: Annotated[bool | None, convert_bool] = commands.flag(
+        description="Disallow untyped globals.", default=None
+    )
 
     allow_redifinition: Annotated[bool | None, convert_bool] = commands.flag(description="Allow redefinition.", default=None)
     disallow_redifinition: Annotated[bool | None, convert_bool] = commands.flag(description="Disallow redefinition.", default=None)
@@ -81,7 +121,9 @@ class MypyConverter(commands.FlagConverter, case_insensitive=True, delimiter=" "
     no_strict_equality: Annotated[bool | None, convert_bool] = commands.flag(description="Disable strict equality.", default=None)
 
     strict_concatenate: Annotated[bool | None, convert_bool] = commands.flag(description="Enable strict concatenation.", default=None)
-    no_strict_concatenate: Annotated[bool | None, convert_bool] = commands.flag(description="Disable strict concatenation.", default=None)
+    no_strict_concatenate: Annotated[bool | None, convert_bool] = commands.flag(
+        description="Disable strict concatenation.", default=None
+    )
 
     strict: Annotated[bool | None, convert_bool] = commands.flag(description="Enable strict mode.", default=None)
 

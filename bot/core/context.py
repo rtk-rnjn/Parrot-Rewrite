@@ -7,7 +7,7 @@ import discord
 from discord.ext import commands
 from jishaku.paginators import PaginatorEmbedInterface
 
-from .utils import Player
+from .utils import PaginationView, Player
 
 if TYPE_CHECKING:
     from .bot import Parrot
@@ -17,6 +17,7 @@ else:
     BotT = TypeVar("BotT", bound=commands.Bot)
 
 T = TypeVar("T")
+PageT = TypeVar("PageT", bound=discord.Embed | discord.File | str)
 
 
 class Context(commands.Context[BotT]):
@@ -94,7 +95,7 @@ class Context(commands.Context[BotT]):
             return ref.resolved.to_reference()
         return None
 
-    async def paginate(self, lines: list[str]):
+    async def jsk_embed_paginate(self, lines: list[str]):
         paginator = commands.Paginator(prefix="", suffix="", max_size=1990)
 
         for line in lines:
@@ -102,6 +103,9 @@ class Context(commands.Context[BotT]):
 
         interface = PaginatorEmbedInterface(self.bot, paginator, owner=self.author, timeout=300)
         return await interface.send_to(self)
+
+    async def paginate(self, *, pages: list[PageT]):
+        await PaginationView.paginate_embed(self, pages)
 
     async def disambiguate(self, matches: list[T], entry: Callable[[T], Any], *, ephemeral: bool = False) -> T:
         if len(matches) == 0:
@@ -118,7 +122,9 @@ class Context(commands.Context[BotT]):
         await view.wait()
         return view.selected
 
-    async def channel_connect(self, *, timeout: float = 30, reconnect: bool = True, cls: T | None = None, self_deaf: bool = True, self_mute: bool = False) -> Player | T:
+    async def channel_connect(
+        self, *, timeout: float = 30, reconnect: bool = True, cls: T | None = None, self_deaf: bool = True, self_mute: bool = False
+    ) -> Player | T:
         if self.author.voice is None or self.author.voice.channel is None:
             raise commands.CommandError("You are not connected to a voice channel.")
 

@@ -56,7 +56,9 @@ class MuteHandler:
     async def remove_timeout(self, _: Context[Parrot], *, member: discord.Member, reason: str | None = None):
         await member.timeout(None, reason=reason)
 
-    async def mute_member(self, _: Context[Parrot], *, member: discord.Member, until: datetime.datetime | None = None, reason: str | None = None):
+    async def mute_member(
+        self, _: Context[Parrot], *, member: discord.Member, until: datetime.datetime | None = None, reason: str | None = None
+    ):
         tz = until.tzinfo if until else None
         if until and until < arrow.utcnow().replace(tzinfo=tz).shift(days=+28).datetime:
             # Use timeout feature
@@ -139,7 +141,7 @@ class Moderation(commands.Cog):
             if finder(entry):
                 audit_log_entries.append(formatted_entry)
 
-        await ctx.paginate(lines=audit_log_entries)
+        await ctx.jsk_embed_paginate(lines=audit_log_entries)
 
     @mod.command(name="security-check", aliases=["security_check", "securitycheck", "seccheck", "check", "sc"])
     @commands.has_permissions(administrator=True)
@@ -218,7 +220,9 @@ class Moderation(commands.Cog):
     async def ban(
         self,
         ctx: Context[Parrot],
-        members: Annotated[list[discord.abc.Snowflake], commands.Greedy[UserID]] = commands.parameter(description="The member(s) to ban from the server."),
+        members: Annotated[list[discord.abc.Snowflake], commands.Greedy[UserID]] = commands.parameter(
+            description="The member(s) to ban from the server."
+        ),
         *,
         reason: Annotated[str, ActionReason] = commands.parameter(description="The reason for the ban.", default=None),
     ):
@@ -258,7 +262,9 @@ class Moderation(commands.Cog):
     async def unban(
         self,
         ctx: Context[Parrot],
-        members: Annotated[list[discord.User], commands.Greedy[BannedMember]] = commands.parameter(description="The member(s) to unban from the server."),
+        members: Annotated[list[discord.User], commands.Greedy[BannedMember]] = commands.parameter(
+            description="The member(s) to unban from the server."
+        ),
         *,
         reason: Annotated[str, ActionReason] = commands.parameter(description="The reason for the unban.", default=None),
     ):
@@ -293,7 +299,9 @@ class Moderation(commands.Cog):
     async def softban(
         self,
         ctx: Context[Parrot],
-        members: Annotated[list[discord.Member], commands.Greedy[discord.Member]] = commands.parameter(description="The member(s) to softban from the server."),
+        members: Annotated[list[discord.Member], commands.Greedy[discord.Member]] = commands.parameter(
+            description="The member(s) to softban from the server."
+        ),
         *,
         reason: Annotated[str, ActionReason] = commands.parameter(description="The reason for the softban.", default=None),
     ):
@@ -407,7 +415,12 @@ class Moderation(commands.Cog):
     @commands.has_permissions(manage_channels=True)
     @commands.bot_has_permissions(manage_channels=True)
     async def lock_channel(
-        self, ctx: Context[Parrot], *, channel: discord.TextChannel = commands.parameter(description="The channel to lock. If none specified, locks the current channel.")
+        self,
+        ctx: Context[Parrot],
+        *,
+        channel: discord.TextChannel = commands.parameter(
+            description="The channel to lock. If none specified, locks the current channel."
+        ),
     ):
         """Lock a text channel by preventing @everyone from sending messages.
 
@@ -423,7 +436,12 @@ class Moderation(commands.Cog):
     @commands.has_permissions(manage_channels=True)
     @commands.bot_has_permissions(manage_channels=True)
     async def unlock_channel(
-        self, ctx: Context[Parrot], *, channel: discord.TextChannel = commands.parameter(description="The channel to unlock. If none specified, unlocks the current channel.")
+        self,
+        ctx: Context[Parrot],
+        *,
+        channel: discord.TextChannel = commands.parameter(
+            description="The channel to unlock. If none specified, unlocks the current channel."
+        ),
     ):
         """Unlock a text channel by restoring @everyone's send messages permission.
 
@@ -441,7 +459,9 @@ class Moderation(commands.Cog):
     async def purge(
         self,
         ctx: Context[Parrot],
-        search: commands.Range[int, 1, 2000] | None = commands.parameter(description="The number of messages to search through. Defaults to 100.", default=100),
+        search: commands.Range[int, 1, 2000] | None = commands.parameter(
+            description="The number of messages to search through. Defaults to 100.", default=100
+        ),
         *,
         flags: PurgeFlags = commands.parameter(description="Flags to filter which messages to delete."),
     ):
@@ -719,9 +739,13 @@ class Moderation(commands.Cog):
     async def voice_limit(
         self,
         ctx: Context[Parrot],
-        limit: int | None = commands.parameter(description="The limit to set for the voice channel. Use `0` or `none` to remove the limit."),
+        limit: int | None = commands.parameter(
+            description="The limit to set for the voice channel. Use `0` or `none` to remove the limit."
+        ),
         *,
-        reason: Annotated[str, ActionReason] = commands.parameter(description="The reason for setting the voice channel limit.", default=None),
+        reason: Annotated[str, ActionReason] = commands.parameter(
+            description="The reason for setting the voice channel limit.", default=None
+        ),
     ):
         """To set the Voice Channel limit.
 
@@ -748,7 +772,9 @@ class Moderation(commands.Cog):
     async def voice_move(
         self,
         ctx: Context[Parrot],
-        members: Annotated[list[discord.Member], commands.Greedy[discord.Member]] = commands.parameter(description="The member(s) to move to another voice channel."),
+        members: Annotated[list[discord.Member], commands.Greedy[discord.Member]] = commands.parameter(
+            description="The member(s) to move to another voice channel."
+        ),
         channel: discord.VoiceChannel | None = commands.parameter(
             description="The voice channel to move the members to. If none specified, you must be in a voice channel to move them to."
         ),
@@ -780,7 +806,9 @@ class Moderation(commands.Cog):
                 if not members:
                     members = voicestate.channel.members
             else:
-                await ctx.error(f"{ctx.author.mention} you must specify the the channel or must be in the voice channel to use this command")
+                await ctx.error(
+                    f"{ctx.author.mention} you must specify the the channel or must be in the voice channel to use this command"
+                )
                 return
 
             try:

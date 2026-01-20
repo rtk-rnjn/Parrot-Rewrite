@@ -71,6 +71,8 @@ class AFK(commands.Cog):
             except discord.Forbidden:
                 pass
 
+            await message.channel.send(f"Welcome back, {message.author.mention}!", delete_after=10)
+
     @commands.Cog.listener()
     async def on_message_edit(self, before: discord.Message, after: discord.Message) -> None:
         if after.author.bot:
@@ -100,7 +102,9 @@ class AFK(commands.Cog):
             if is_afk:
                 afk_data = await discord.utils.maybe_coroutine(self.bot.redis_client.hgetall, redis_key)
                 afk_text = afk_data.get("text", "AFK")
-                await message.channel.send(f"{message.author.mention}, {member.display_name} is currently AFK: {afk_text}", delete_after=10)
+                await message.channel.send(
+                    f"{message.author.mention}, {member.display_name} is currently AFK: {afk_text}", delete_after=10
+                )
 
 
 async def setup(bot: Parrot) -> None:
