@@ -31,7 +31,9 @@ class IndiaUnfilteredChannelEvents(commands.Cog):
             new_name = f"{GENERAL_CHAT_NAME_PREFIX}general-chat"
 
         try:
-            await self.general_chat_channel.send(f"Changing channel name from `{self.general_chat_channel.name}` to `{new_name}`.", delete_after=10 * 60)
+            await self.general_chat_channel.send(
+                f"**Changing channel name from `{self.general_chat_channel.name}` to `{new_name}`.**", delete_after=10 * 60
+            )
             await self.general_chat_channel.edit(name=new_name, reason="Cycling general chat channel name.")
 
         except discord.Forbidden:
