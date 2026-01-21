@@ -39,7 +39,10 @@ class IndiaUnfilteredMessageEvents(commands.Cog):
         if message.author.bot:
             return
 
-        embed = discord.Embed(color=discord.Color.red(), description=message.content or "*No content*")
+        if not message.content:
+            return
+
+        embed = discord.Embed(color=discord.Color.red(), description=message.content)
 
         await self.message_delete_logs_channel.send(
             content=f"{message.author} [{message.author.mention}] (`{message.author.id}`) **|** {message.channel} (`{message.channel.id}`)",

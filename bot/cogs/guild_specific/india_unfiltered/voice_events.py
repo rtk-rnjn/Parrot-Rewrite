@@ -73,7 +73,7 @@ class IndiaUnfilteredVoiceEvents(commands.Cog):
         if voice_logs_channel is None:
             return
 
-        user = f"**{escape_markdown(member.display_name)}** [{member.mention}] (`{member.id}`)"
+        user = f"**{escape_markdown(member.name)}** [{member.mention}] (`{member.id}`)"
         before_channel, after_channel = None, None
         if before.channel is not None:
             before_channel = f"**{escape_markdown(before.channel.name)}** (`{before.channel.id}`)"
