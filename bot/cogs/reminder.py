@@ -3,7 +3,7 @@ from __future__ import annotations
 import datetime
 from inspect import cleandoc
 from random import random
-from typing import TYPE_CHECKING, Annotated, TypedDict
+from typing import TYPE_CHECKING, Annotated, TypedDict, override
 
 import arrow
 import dateutil.tz
@@ -46,6 +46,7 @@ class SnoozeModal(discord.ui.Modal, title="Snooze For"):
         super().__init__(title="Snooze For", timeout=300)
         self.metadata = metadata
 
+    @override
     async def on_submit(self, interaction: discord.Interaction[Parrot]) -> None:
         try:
             future_time = time.FutureTime(str(self.response))
@@ -64,7 +65,7 @@ class DropdownView(discord.ui.Select["SnoozeView"]):
     def __init__(self) -> None:
         super().__init__(placeholder="Snooze for...", min_values=1, max_values=1, options=select_options)
 
-    async def callback(self, interaction: discord.Interaction[Parrot]) -> None:
+    async def callback(self, interaction: discord.Interaction[Parrot]):
         assert self.view is not None
 
         value = self.values[0]

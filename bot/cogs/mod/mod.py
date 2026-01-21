@@ -806,6 +806,9 @@ class Moderation(commands.Cog):
         def check(m: discord.Message):
             return m.author == ctx.me or m.content.startswith(prefixes)
 
+        if TYPE_CHECKING:
+            assert isinstance(ctx.channel, discord.abc.GuildChannel)
+
         assert isinstance(ctx.channel, discord.abc.GuildChannel)
 
         deleted = await ctx.channel.purge(limit=search, check=check, before=ctx.message)
@@ -817,7 +820,8 @@ class Moderation(commands.Cog):
         def check(m: discord.Message):
             return (m.author == ctx.me or m.content.startswith(prefixes)) and not (m.mentions or m.role_mentions)
 
-        assert isinstance(ctx.channel, discord.abc.GuildChannel)
+        if TYPE_CHECKING:
+            assert isinstance(ctx.channel, discord.abc.GuildChannel)
 
         deleted = await ctx.channel.purge(limit=search, check=check, before=ctx.message)
         return Counter(m.author.display_name for m in deleted)

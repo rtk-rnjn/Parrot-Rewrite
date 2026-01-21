@@ -54,6 +54,7 @@ __all_cogs__ = [
     "bot.cogs.guild_specific.india_unfiltered.member_events",
     "bot.cogs.guild_specific.india_unfiltered.message_events",
     "bot.cogs.guild_specific.india_unfiltered.voice_events",
+    "bot.cogs.guild_specific.india_unfiltered.audit_log_events",
 
     # SECTOR 17-29
     "bot.cogs.guild_specific.sector_17_29.events",
@@ -216,7 +217,7 @@ class Parrot(commands.Bot):  # pylint: disable=too-many-public-methods
                     bot=self, host="localhost", port=2333, password="youshallnotpass", identifier="MAIN"
                 )
 
-            self.default_lavalink_node = node
+                self.default_lavalink_node = node
 
             self.ON_READY_EVENT_FIRED = True
 
