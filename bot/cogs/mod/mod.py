@@ -415,7 +415,7 @@ class Moderation(commands.Cog):
 
         await ctx.send(f"Unmuted {len(members)} members", allowed_mentions=discord.AllowedMentions.none())
 
-    @commands.command(aliases=["remove", "bulk-delete", "bulk_delete", "clear"])
+    @commands.command(aliases=["bulk-delete", "bulk_delete", "clear"])
     @commands.has_permissions(manage_messages=True)
     @commands.bot_has_permissions(manage_messages=True)
     async def purge(
@@ -822,7 +822,6 @@ class Moderation(commands.Cog):
         deleted = await ctx.channel.purge(limit=search, check=check, before=ctx.message)
         return Counter(m.author.display_name for m in deleted)
 
-    @commands.command(hidden=True)
     @commands.command(name="cleanup")
     async def cleanup(
         self,
