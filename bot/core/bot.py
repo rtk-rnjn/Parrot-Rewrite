@@ -88,6 +88,7 @@ class TimerConfig(TypedDict):
     event_name: str
     created_at: datetime.datetime
     due_date: datetime.datetime
+    counter: NotRequired[int]
 
     metadata: dict[str, Any]
 
@@ -362,12 +363,13 @@ class Parrot(commands.Bot):  # pylint: disable=too-many-public-methods
 
         self.dispatch(event_name, timer)
 
-    async def delete_timer(self, timer: TimerConfig) -> None:
-        if self._current_timer is not None and timer.get("_id") == self._current_timer.get("_id"):
-            delete_result = await self.timer_collection.delete_one({"_id": timer.get("_id")})
-            if delete_result.deleted_count > 0:
-                self._current_timer = None
-                self._timer_event.set()
+    async def delete_timer(self, timer: TimerConfig):
+        delete_result = await self.timer_collection.delete_one({"_id": timer.get("_id")})
+        if delete_result.deleted_count > 0:
+            self._current_timer = None
+            self._timer_event.set()
+
+        return delete_result
 
     async def short_dispatcher(self, timer: TimerConfig) -> None:
         wait_seconds = (timer["due_date"] - arrow.utcnow().datetime).total_seconds()
@@ -375,9 +377,18 @@ class Parrot(commands.Bot):  # pylint: disable=too-many-public-methods
 
         self.dispatch(timer["event_name"], timer)
 
+    async def __get_next_timer_sequence(self) -> int:
+        last_timer = await self.timer_collection.find_one(sort=[("counter", pymongo.DESCENDING)])
+        if last_timer is None or "counter" not in last_timer:
+            return 1
+
+        return last_timer["counter"] + 1
+
     async def create_timer(self, /, *, event_name: str, due_date: datetime.datetime, metadata: dict[str, Any]):
         now = arrow.utcnow().datetime
-        timer = TimerConfig(event_name=event_name, due_date=due_date, metadata=metadata, created_at=now)
+        timer = TimerConfig(
+            event_name=event_name, due_date=due_date, metadata=metadata, created_at=now, counter=await self.__get_next_timer_sequence()
+        )
         delta = (due_date - now).total_seconds()
         if delta <= 60:
             # Short Dispatch
@@ -392,6 +403,10 @@ class Parrot(commands.Bot):  # pylint: disable=too-many-public-methods
                 _ = self.timer_task.cancel()
                 self.timer_task = self.loop.create_task(self.dispatch_timer())
 
+        return timer
+
+    async def find_timer_by_counter(self, counter: int) -> TimerConfig | None:
+        timer = await self.timer_collection.find_one({"counter": counter})
         return timer
 
     def fuzzy_finder(self, query: str, /, *, choices: Iterable[str]) -> list[str]:
