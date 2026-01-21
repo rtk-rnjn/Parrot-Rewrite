@@ -111,7 +111,9 @@ class SnoozeView(discord.ui.View):
 
     async def interaction_check(self, interaction: discord.Interaction[Parrot]) -> bool:
         if interaction.user.id != self.timer_config["metadata"]["user_id"]:
-            await interaction.response.send_message(f"{interaction.user.mention} This interaction button is not for you")
+            await interaction.response.send_message(
+                f"{interaction.user.mention} This interaction button is not for you", ephemeral=True
+            )
             return False
 
         return True
@@ -194,7 +196,7 @@ class Reminders(commands.Cog):  # pylint: disable=too-many-public-methods
 
         return await self.bot.timer_collection.find(filter).to_list(None)
 
-    @reminder.command(name="list", aliases=["show", "view"])
+    @reminder.command(name="list", aliases=["show", "view", "ls"])
     async def reminder_list(self, ctx: Context[Parrot]) -> None:
         """Lists your active reminders."""
         timers = await self.ger_reminders(ctx.author.id)

@@ -56,14 +56,13 @@ class MuteHandler:
     async def remove_timeout(self, _: Context[Parrot], *, member: discord.Member, reason: str | None = None):
         await member.timeout(None, reason=reason)
 
-    async def mute_member(
-        self, _: Context[Parrot], *, member: discord.Member, until: datetime.datetime | None = None, reason: str | None = None
-    ):
-        tz = until.tzinfo if until else None
-        if until and until < arrow.utcnow().replace(tzinfo=tz).shift(days=+28).datetime:
-            # Use timeout feature
-            await member.timeout(until, reason=reason)
-            return
+    async def mute_member(self, _: Context[Parrot], *, member: discord.Member, until: datetime.datetime, reason: str | None = None):
+        # We cant timeout below 1m and over 28day
+        # Just min max
+        until = max(until, discord.utils.utcnow() + datetime.timedelta(minutes=1))
+        until = min(until, discord.utils.utcnow() + datetime.timedelta(days=27, hours=23, minutes=59, seconds=59))
+
+        await member.timeout(until, reason=reason)
 
     async def unmute_member(self, _: Context[Parrot], *, member: discord.Member, reason: str | None = None):
         if member.is_timed_out():
@@ -205,6 +204,7 @@ class Moderation(commands.Cog):
             member = members[0]
             await member.kick(reason=reason)
             await ctx.send(f"Kicked {member.mention}", allowed_mentions=discord.AllowedMentions.none())
+            return
 
         message = await ctx.send(f"Kicking {len(members)} members... (0/{len(members)})")
         for i, member in enumerate(members):
@@ -247,14 +247,13 @@ class Moderation(commands.Cog):
             else:
                 await ctx.send(f"Banned Member ID {member.id}", allowed_mentions=discord.AllowedMentions.none())
 
-        message = await ctx.send(f"Banning {len(members)} members... (0/{len(members)})")
+            return
 
-        for i, member in enumerate(members):
-            await ctx.guild.ban(member, reason=reason)
-            if (i + 1) % 5 == 0 or i + 1 == len(members):
-                await message.edit(content=f"Banning {len(members)} members... ({i + 1}/{len(members)})")
+        result = await ctx.guild.bulk_ban(members, reason=reason)
+        banned = len(result.banned)
+        failed = len(result.failed)
 
-        await ctx.send(f"Banned {len(members)} members")
+        await ctx.send(f"Banned {banned} members, failed to ban {failed} members")
 
     @commands.command(name="unban", aliases=["pardon", "unhammer"])
     @commands.has_permissions(ban_members=True)
@@ -283,6 +282,7 @@ class Moderation(commands.Cog):
             member = members[0]
             await ctx.guild.unban(member, reason=reason)
             await ctx.send(f"Unbanned {member.mention}", allowed_mentions=discord.AllowedMentions.none())
+            return
 
         message = await ctx.send(f"Unbanning {len(members)} members... (0/{len(members)})")
 
@@ -324,16 +324,13 @@ class Moderation(commands.Cog):
             await ctx.guild.ban(member, reason=reason, delete_message_seconds=24 * 60 * 60)
             await ctx.guild.unban(member, reason="Softban unban")
             await ctx.send(f"Softbanned {member.mention}", allowed_mentions=discord.AllowedMentions.none())
+            return
 
-        message = await ctx.send(f"Softbanning {len(members)} members... (0/{len(members)})")
+        result = await ctx.guild.bulk_ban(members, reason=reason, delete_message_seconds=24 * 60 * 60)
+        for banned_member in result.banned:
+            await ctx.guild.unban(banned_member, reason="Softban unban")
 
-        for i, member in enumerate(members):
-            await ctx.guild.ban(member, reason=reason)
-            await ctx.guild.unban(member, reason="Softban unban")
-            if (i + 1) % 5 == 0 or i + 1 == len(members):
-                await message.edit(content=f"Softbanning {len(members)} members... ({i + 1}/{len(members)})")
-
-        await ctx.send(f"Softbanned {len(members)} members")
+        await ctx.send(f"Softbanned {len(result.banned)} members", allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command(name="timeout", aliases=["time-out", "mute", "time_out", "stfu"])
     @commands.has_permissions(moderate_members=True)
@@ -357,8 +354,10 @@ class Moderation(commands.Cog):
             await ctx.send("You must specify at least one member to timeout.")
             return
 
-        until: datetime.datetime | None = getattr(duration, "dt", None)
-        until_str = discord.utils.format_dt(until, "R") if until else "indefinitely"
+        duration = duration or ShortTime("27d")
+
+        until: datetime.datetime = duration.dt
+        until_str = discord.utils.format_dt(until, "R")
 
         if len(members) == 1:
             member = members[0]
@@ -410,48 +409,6 @@ class Moderation(commands.Cog):
                 await message.edit(content=f"Unmuting {len(members)} members... ({i + 1}/{len(members)})")
 
         await ctx.send(f"Unmuted {len(members)} members", allowed_mentions=discord.AllowedMentions.none())
-
-    @commands.command(name="lock", aliases=["lockdown"])
-    @commands.has_permissions(manage_channels=True)
-    @commands.bot_has_permissions(manage_channels=True)
-    async def lock_channel(
-        self,
-        ctx: Context[Parrot],
-        *,
-        channel: discord.TextChannel = commands.parameter(
-            description="The channel to lock. If none specified, locks the current channel."
-        ),
-    ):
-        """Lock a text channel by preventing @everyone from sending messages.
-
-        You must have the `Manage Channels` permission to use this command.
-        Bot must also have the `Manage Channels` permission to execute this command.
-        """
-        overwrite = channel.overwrites_for(ctx.guild.default_role)
-        overwrite.send_messages = False
-        await channel.set_permissions(ctx.guild.default_role, overwrite=overwrite, reason="Channel locked down")
-        await ctx.send(f"Locked {channel.mention}", allowed_mentions=discord.AllowedMentions.none())
-
-    @commands.command(name="unlock", aliases=["unlockdown"])
-    @commands.has_permissions(manage_channels=True)
-    @commands.bot_has_permissions(manage_channels=True)
-    async def unlock_channel(
-        self,
-        ctx: Context[Parrot],
-        *,
-        channel: discord.TextChannel = commands.parameter(
-            description="The channel to unlock. If none specified, unlocks the current channel."
-        ),
-    ):
-        """Unlock a text channel by restoring @everyone's send messages permission.
-
-        You must have the `Manage Channels` permission to use this command.
-        Bot must also have the `Manage Channels` permission to execute this command.
-        """
-        overwrite = channel.overwrites_for(ctx.guild.default_role)
-        overwrite.send_messages = None
-        await channel.set_permissions(ctx.guild.default_role, overwrite=overwrite, reason="Channel unlocked")
-        await ctx.send(f"Unlocked {channel.mention}", allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command(aliases=["remove", "bulk-delete", "bulk_delete", "clear"])
     @commands.has_permissions(manage_messages=True)
@@ -829,6 +786,66 @@ class Moderation(commands.Cog):
         for mem in members:
             await mem.edit(voice_channel=channel, reason=reason)
         return await ctx.send(f"{ctx.author.mention} moved {len(members)} members to {channel.mention}")
+
+    async def _basic_cleanup_strategy(self, ctx: Context[Parrot], search: int):
+        count = 0
+        async for msg in ctx.history(limit=search, before=ctx.message):
+            if msg.author == ctx.me and not (msg.mentions or msg.role_mentions):
+                await msg.delete()
+                count += 1
+        return {'Bot': count}
+
+    async def _complex_cleanup_strategy(self, ctx: Context[Parrot], search: int):
+        prefixes = tuple(await self.bot.get_guild_prefix(ctx.guild))  # thanks startswith
+
+        def check(m: discord.Message):
+            return m.author == ctx.me or m.content.startswith(prefixes)
+
+        assert isinstance(ctx.channel, discord.abc.GuildChannel)
+
+        deleted = await ctx.channel.purge(limit=search, check=check, before=ctx.message)
+        return Counter(m.author.display_name for m in deleted)
+
+    async def _regular_user_cleanup_strategy(self, ctx: Context[Parrot], search: int):
+        prefixes = tuple(await self.bot.get_guild_prefix(ctx.guild))
+
+        def check(m: discord.Message):
+            return (m.author == ctx.me or m.content.startswith(prefixes)) and not (m.mentions or m.role_mentions)
+
+        assert isinstance(ctx.channel, discord.abc.GuildChannel)
+
+        deleted = await ctx.channel.purge(limit=search, check=check, before=ctx.message)
+        return Counter(m.author.display_name for m in deleted)
+
+    @commands.command(hidden=True)
+    @commands.command(name="cleanup")
+    async def cleanup(
+        self,
+        ctx: Context[Parrot],
+        search: int = commands.parameter(description="The number of messages to search through.", default=100),
+    ):
+        strategy = self._basic_cleanup_strategy
+        is_mod = ctx.channel.permissions_for(ctx.author).manage_messages
+        if ctx.channel.permissions_for(ctx.me).manage_messages:
+            if is_mod:
+                strategy = self._complex_cleanup_strategy
+            else:
+                strategy = self._regular_user_cleanup_strategy
+
+        if is_mod:
+            search = min(max(2, search), 1000)
+        else:
+            search = min(max(2, search), 25)
+
+        spammers = await strategy(ctx, search)
+        deleted = sum(spammers.values())
+        messages = [f'{deleted} message{" was" if deleted == 1 else "s were"} removed.']
+        if deleted:
+            messages.append('')
+            spammers = sorted(spammers.items(), key=lambda t: t[1], reverse=True)
+            messages.extend(f'- **{author}**: {count}' for author, count in spammers)
+
+        await ctx.send('\n'.join(messages), delete_after=10)
 
 
 async def setup(bot: Parrot) -> None:
