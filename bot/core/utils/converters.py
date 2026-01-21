@@ -38,20 +38,20 @@ class UserID(commands.Converter):  # pylint: disable=too-few-public-methods
         return member
 
 
-class BannedMember(commands.Converter):  # pylint: disable=too-few-public-methods
+class BannedMember(commands.Converter):
     async def convert(self, ctx: Context[Parrot], argument: str):
         if argument.isdigit():
             member_id = int(argument, base=10)
-            ban_entry = await ctx.guild.fetch_ban(discord.Object(id=member_id))
-            return ban_entry.user
+            try:
+                return await ctx.guild.fetch_ban(discord.Object(id=member_id))
+            except discord.NotFound:
+                raise commands.BadArgument('This member has not been banned before.') from None
 
-        async for entry in ctx.guild.bans():
-            if argument in (entry.user.name, str(entry.user)):
-                return entry.user
-            if str(entry.user) == argument:
-                return entry.user
+        entity = await discord.utils.find(lambda u: str(u.user) == argument, ctx.guild.bans(limit=None))
 
-        raise RuntimeError()
+        if entity is None:
+            raise commands.BadArgument('This member has not been banned before.')
+        return entity
 
 
 class ActionReason(commands.Converter):  # pylint: disable=too-few-public-methods

@@ -7,7 +7,6 @@ import re
 from collections import Counter
 from typing import TYPE_CHECKING, Annotated, Any, Callable, Literal, TypedDict
 
-import arrow
 import discord
 from discord.ext import commands
 
@@ -220,7 +219,7 @@ class Moderation(commands.Cog):
     async def ban(
         self,
         ctx: Context[Parrot],
-        members: Annotated[list[discord.abc.Snowflake], commands.Greedy[UserID]] = commands.parameter(
+        members: Annotated[list[discord.Object], commands.Greedy[UserID]] = commands.parameter(
             description="The member(s) to ban from the server."
         ),
         *,
@@ -261,8 +260,8 @@ class Moderation(commands.Cog):
     async def unban(
         self,
         ctx: Context[Parrot],
-        members: Annotated[list[discord.User], commands.Greedy[BannedMember]] = commands.parameter(
-            description="The member(s) to unban from the server."
+        banned_entries: Annotated[list[discord.BanEntry], commands.Greedy[BannedMember]] = commands.parameter(
+            description="The member(s) to unban from the server.", displayed_name="members"
         ),
         *,
         reason: Annotated[str, ActionReason] = commands.parameter(description="The reason for the unban.", default=None),
@@ -274,24 +273,30 @@ class Moderation(commands.Cog):
         You must have the `Ban Members` permission to use this command.
         Bot must also have the `Ban Members` permission to execute this command.
         """
-        if len(members) == 0:
+        if len(banned_entries) == 0:
             await ctx.send("You must specify at least one member to unban.")
             return
 
-        if len(members) == 1:
-            member = members[0]
-            await ctx.guild.unban(member, reason=reason)
-            await ctx.send(f"Unbanned {member.mention}", allowed_mentions=discord.AllowedMentions.none())
+        if len(banned_entries) == 1:
+            entry = banned_entries[0]
+            await ctx.guild.unban(entry.user, reason=reason)
+            if entry.reason:
+                await ctx.send(
+                    f"Unbanned {entry.user.mention} (Previously banned for: {entry.reason})",
+                    allowed_mentions=discord.AllowedMentions.none(),
+                )
+            else:
+                await ctx.send(f"Unbanned {entry.user.mention}", allowed_mentions=discord.AllowedMentions.none())
             return
 
-        message = await ctx.send(f"Unbanning {len(members)} members... (0/{len(members)})")
+        message = await ctx.send(f"Unbanning {len(banned_entries)} members... (0/{len(banned_entries)})")
 
-        for i, member in enumerate(members):
-            await ctx.guild.unban(member, reason=reason)
-            if (i + 1) % 5 == 0 or i + 1 == len(members):
-                await message.edit(content=f"Unbanning {len(members)} members... ({i + 1}/{len(members)})")
+        for i, entry in enumerate(banned_entries):
+            await ctx.guild.unban(entry.user, reason=reason)
+            if (i + 1) % 5 == 0 or i + 1 == len(banned_entries):
+                await message.edit(content=f"Unbanning {len(banned_entries)} members... ({i + 1}/{len(banned_entries)})")
 
-        await ctx.send(f"Unbanned {len(members)} members")
+        await ctx.send(f"Unbanned {len(banned_entries)} members")
 
     @commands.command(name="softban", aliases=["tempban", "soft_ban", "temp_ban"])
     @commands.has_permissions(ban_members=True)
