@@ -366,9 +366,14 @@ class Parrot(commands.Bot):  # pylint: disable=too-many-public-methods
 
     async def delete_timer(self, timer: TimerConfig):
         delete_result = await self.timer_collection.delete_one({"_id": timer.get("_id")})
-        if delete_result.deleted_count > 0:
-            self._current_timer = None
-            self._timer_event.set()
+        if (
+            delete_result.deleted_count > 0
+            and self._current_timer is not None
+            and timer.get("_id") == self._current_timer.get("_id")
+            and self.timer_task is not None
+        ):
+            _ = self.timer_task.cancel()
+            self.timer_task = self.loop.create_task(self.dispatch_timer())
 
         return delete_result
 

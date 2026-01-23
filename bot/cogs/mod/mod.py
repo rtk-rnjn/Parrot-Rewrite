@@ -202,7 +202,7 @@ class Moderation(commands.Cog):
         if len(members) == 1:
             member = members[0]
             await member.kick(reason=reason)
-            await ctx.send(f"Kicked {member.mention}", allowed_mentions=discord.AllowedMentions.none())
+            await ctx.send(f"Kicked {member.mention} (ID: `{member.id}`)", allowed_mentions=discord.AllowedMentions.none())
             return
 
         message = await ctx.send(f"Kicking {len(members)} members... (0/{len(members)})")
@@ -241,8 +241,8 @@ class Moderation(commands.Cog):
         if len(members) == 1:
             member = members[0]
             await ctx.guild.ban(member, reason=reason)
-            if hasattr(member, "mention"):
-                await ctx.send(f"Banned {member.mention}", allowed_mentions=discord.AllowedMentions.none())  # type: ignore
+            if isinstance(member, (discord.Member, discord.User)):
+                await ctx.send(f"Banned {member.mention} (ID: `{member.id}`)", allowed_mentions=discord.AllowedMentions.none())
             else:
                 await ctx.send(f"Banned Member ID {member.id}", allowed_mentions=discord.AllowedMentions.none())
 
@@ -286,7 +286,9 @@ class Moderation(commands.Cog):
                     allowed_mentions=discord.AllowedMentions.none(),
                 )
             else:
-                await ctx.send(f"Unbanned {entry.user.mention}", allowed_mentions=discord.AllowedMentions.none())
+                await ctx.send(
+                    f"Unbanned {entry.user.mention} (ID: `{entry.user.id}`)", allowed_mentions=discord.AllowedMentions.none()
+                )
             return
 
         message = await ctx.send(f"Unbanning {len(banned_entries)} members... (0/{len(banned_entries)})")
@@ -367,7 +369,9 @@ class Moderation(commands.Cog):
         if len(members) == 1:
             member = members[0]
             await self.mute_handler.mute_member(ctx, member=member, until=until, reason=reason)
-            await ctx.send(f"Timed out {member.mention} until {until_str}", allowed_mentions=discord.AllowedMentions.none())
+            await ctx.send(
+                f"Timed out {member.mention} (ID: `{member.id}`) (expiry {until_str})", allowed_mentions=discord.AllowedMentions.none()
+            )
             return
 
         message = await ctx.send(f"Timing out {len(members)} members... (0/{len(members)})")
@@ -403,7 +407,7 @@ class Moderation(commands.Cog):
         if len(members) == 1:
             member = members[0]
             await self.mute_handler.unmute_member(ctx, member=member, reason=reason)
-            await ctx.send(f"Unmuted {member.mention}", allowed_mentions=discord.AllowedMentions.none())
+            await ctx.send(f"Unmuted {member.mention} (ID: `{member.id}`)", allowed_mentions=discord.AllowedMentions.none())
             return
 
         message = await ctx.send(f"Unmuting {len(members)} members... (0/{len(members)})")
