@@ -30,7 +30,7 @@ class ConfessionModal(discord.ui.Modal, title="Anonymous Confession"):
         await interaction.response.defer(ephemeral=True)
         random_adjective = interaction.client.assets.random_adjective
         random_noun = random.choice(interaction.client.assets.nouns)
-        name = f"Confession by {random_adjective} {random_noun}"
+        name = f"Confession by {random_adjective.title()} {random_noun.title()}"
         embed = discord.Embed(
             title=name, description=self.confession.value, color=discord.Color.purple(), timestamp=discord.utils.utcnow()
         )
