@@ -1,11 +1,18 @@
 from __future__ import annotations
 
-from typing import Annotated
+from typing import Annotated, TypedDict, cast
 
 import discord
 from discord.ext import commands
 
 from bot.core import Context, Parrot
+
+
+class AFKData(TypedDict):
+    text: str
+    guild: int
+    user_id: int
+    mentions: int
 
 
 class AFK(commands.Cog):
@@ -16,9 +23,13 @@ class AFK(commands.Cog):
 
     async def set_afk(self, *, guild: discord.Guild, author: discord.Member, text: str):
         redis_key = f"afk:{guild.id}:{author.id}"
-        payload = {"text": text, "guild": guild.id, "user_id": author.id}
+        payload: AFKData = {"text": text, "guild": guild.id, "user_id": author.id, "mentions": 0}
 
-        await discord.utils.maybe_coroutine(self.bot.redis_client.hset, redis_key, mapping=payload)
+        await discord.utils.maybe_coroutine(self.bot.redis_client.hset, redis_key, mapping=dict(payload))
+
+    async def increase_mention_count(self, *, guild: discord.Guild, user_id: int):
+        redis_key = f"afk:{guild.id}:{user_id}"
+        await discord.utils.maybe_coroutine(self.bot.redis_client.hincrby, redis_key, "mentions", 1)
 
     @commands.command(name="afk", aliases=["away"])
     async def afk(self, ctx: Context, *, reason: Annotated[str, commands.clean_content] = "AFK"):
@@ -58,20 +69,26 @@ class AFK(commands.Cog):
         assert message.guild is not None  # for mypy
 
         redis_key = f"afk:{message.guild.id}:{message.author.id}"
-        is_afk = await discord.utils.maybe_coroutine(self.bot.redis_client.exists, redis_key)
+        afk_data = cast(AFKData, await discord.utils.maybe_coroutine(self.bot.redis_client.hgetall, redis_key))
 
-        if is_afk:
+        if afk_data:
             await discord.utils.maybe_coroutine(self.bot.redis_client.delete, redis_key)
             try:
                 original_nick = message.author.display_name
                 if original_nick.startswith("[AFK] "):
-                    new_nick = original_nick[6:]  # Remove the [AFK] prefix
+                    new_nick = original_nick.lstrip("[AFK] ").strip("[AFK]")
                     if isinstance(message.author, discord.Member):
                         await message.author.edit(nick=new_nick, reason=f"{message.author} is no longer AFK")
             except discord.Forbidden:
                 pass
 
-            await message.channel.send(f"Welcome back, {message.author.mention}!", delete_after=10)
+            mentions = afk_data.get("mentions", 0)
+            if mentions > 0:
+                content = f"Welcome back {message.author.mention}! You were mentioned {afk_data.get('mentions', 0)} times while you were AFK."
+            else:
+                content = f"Welcome back {message.author.mention}!"
+
+            await message.channel.send(content, delete_after=10)
 
     @commands.Cog.listener()
     async def on_message_edit(self, before: discord.Message, after: discord.Message) -> None:
@@ -105,6 +122,7 @@ class AFK(commands.Cog):
                 await message.channel.send(
                     f"{message.author.mention}, {member.display_name} is currently AFK: {afk_text}", delete_after=10
                 )
+                await self.increase_mention_count(guild=message.guild, user_id=member.id)
 
 
 async def setup(bot: Parrot) -> None:
