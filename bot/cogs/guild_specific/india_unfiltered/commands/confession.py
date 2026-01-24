@@ -108,11 +108,11 @@ class ConfessionCommands(commands.Cog):
     async def confession_rules(self, interaction: discord.Interaction) -> None:
         """View the rules for making confessions."""
         rules = (
-            "1. Strictly DO NOT SHARE personal information (yours or others'). This includes names, locations, contact details, etc.\n",
-            "2. Confessions must be respectful and non-offensive. Hate speech, harassment, or discriminatory content will not be tolerated.\n",
-            "3. No spam or promotional content. Confessions should be genuine and meaningful.\n",
-            "4. This is not anonymous general chat. Keep confessions relevant and appropriate for the community.\n",
-            "5. The moderators reserve the right to remove any confession that violates these rules or is deemed inappropriate.\n",
+            "1. Strictly DO NOT SHARE personal information (yours or others'). This includes names, locations, contact details, etc.\n"
+            "2. Confessions must be respectful and non-offensive. Hate speech, harassment, or discriminatory content will not be tolerated.\n"
+            "3. No spam or promotional content. Confessions should be genuine and meaningful.\n"
+            "4. This is not anonymous general chat. Keep confessions relevant and appropriate for the community.\n"
+            "5. The moderators reserve the right to remove any confession that violates these rules or is deemed inappropriate.\n"
         )
         embed = discord.Embed(
             title="Confession Rules", description=rules, color=discord.Color.blue(), timestamp=discord.utils.utcnow()
