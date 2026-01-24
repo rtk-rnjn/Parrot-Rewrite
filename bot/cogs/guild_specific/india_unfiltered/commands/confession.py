@@ -126,7 +126,7 @@ class ConfessionCommands(commands.Cog):
         """Lock the confession system."""
         self.locked = True
         self.locked_reason = reason or "Maintenance"
-        await interaction.response.send_message(f"The confession system has been locked.\nReason: **{reason}**", ephemeral=True)
+        await interaction.response.send_message(f"The confession system has been locked.\nReason: **{self.locked_reason}**", ephemeral=True)
 
     @confession.command(name="unlock", description="Unlock the confession system.")
     @app_commands.checks.has_permissions(manage_channels=True)
