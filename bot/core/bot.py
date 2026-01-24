@@ -55,6 +55,7 @@ __all_cogs__ = [
     "bot.cogs.guild_specific.india_unfiltered.message_events",
     "bot.cogs.guild_specific.india_unfiltered.voice_events",
     "bot.cogs.guild_specific.india_unfiltered.audit_log_events",
+    "bot.cogs.guild_specific.india_unfiltered.commands.confession",
 
     # SECTOR 17-29
     "bot.cogs.guild_specific.sector_17_29.events",

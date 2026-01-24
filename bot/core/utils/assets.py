@@ -77,6 +77,7 @@ class Paths(Enum):
     PYTHON_TAGS = ASSETS / "python_tags"
     DISCORD_FACTS = ASSETS / "discord_facts.json"
     QUOTES = ASSETS / "quotes.txt"
+    NOUNS = ASSETS / "nouns.txt"
 
     DATE_IDEAS = VALENTINE / "date_ideas.json"
     LOVE_MATCHES = VALENTINE / "love_matches.json"
@@ -112,6 +113,7 @@ class Assets:
         self._valentine_facts: ValentineFacts | None = None
         self._zodiac_compatibility: dict[str, list[ZodicCompatibility]] = {}
         self._zodiac_explanation: dict[str, ZodiacExplanation] = {}
+        self._nouns: list[str] = []
 
         self.emoji = Emoji
 
@@ -269,3 +271,12 @@ class Assets:
         with open(Paths.ZODIAC_EXPLANATION.value, "r", encoding="utf-8") as file:
             self._zodiac_explanation = json.load(file)
             return self._zodiac_explanation
+
+    @property
+    def nouns(self) -> list[str]:
+        if self._nouns:
+            return self._nouns
+
+        with open(Paths.NOUNS.value, "r", encoding="utf-8") as file:
+            self._nouns = [line.strip() for line in file]
+            return self._nouns
