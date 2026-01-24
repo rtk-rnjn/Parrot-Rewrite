@@ -30,7 +30,7 @@ class ConfessionModal(discord.ui.Modal, title="Anonymous Confession"):
         min_length=20,
     )
 
-    def __init__(self, *, text: str, random_name: str) -> None:
+    def __init__(self, *, text: str | None, random_name: str) -> None:
         super().__init__(timeout=None)
         self.text = text
         self.confession.default = text
@@ -70,9 +70,8 @@ class ConfessionCommands(commands.Cog):
     @app_commands.command(name="confess", description="Make an anonymous confession.")
     @app_commands.guilds(discord.Object(id=GUILD_ID))
     @app_commands.checks.cooldown(1, 10 * 60, key=lambda i: (i.user.id))
-    async def confess(
-        self, interaction: discord.Interaction[Parrot], *, text: str = commands.parameter(description="Your anonymous confession.")
-    ) -> None:
+    @app_commands.describe(text="Optional text for your confession.")
+    async def confess(self, interaction: discord.Interaction[Parrot], *, text: str | None = None) -> None:
         """Make an anonymous confession."""
 
         random_adjective = interaction.client.assets.random_adjective.title()
@@ -101,8 +100,11 @@ class ConfessionCommands(commands.Cog):
             "An unexpected error occurred while processing your confession. Please try again later.", ephemeral=True
         )
 
-    @app_commands.command(name="confession rules", description="View the rules for making confessions.")
-    @app_commands.guilds(discord.Object(id=GUILD_ID))
+    confession = app_commands.Group(
+        name="confession", description="Confession related commands.", guild_ids=[GUILD_ID], guild_only=True
+    )
+
+    @confession.command(name="rules", description="View the rules for making confessions.")
     async def confession_rules(self, interaction: discord.Interaction) -> None:
         """View the rules for making confessions."""
         rules = (
@@ -117,22 +119,16 @@ class ConfessionCommands(commands.Cog):
         )
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
-    @app_commands.command(name="confession lock", description="Lock the confession system.")
-    @app_commands.guilds(discord.Object(id=GUILD_ID))
+    @confession.command(name="lock", description="Lock the confession system.")
     @app_commands.checks.has_permissions(manage_channels=True)
-    async def lock_confessions(
-        self,
-        interaction: discord.Interaction,
-        *,
-        reason: str = commands.parameter(default="Maintenance", description="Reason for locking confessions."),
-    ) -> None:
+    @app_commands.describe(reason="Reason for locking the confession system.")
+    async def lock_confessions(self, interaction: discord.Interaction, *, reason: str | None = None) -> None:
         """Lock the confession system."""
         self.locked = True
-        self.locked_reason = reason
+        self.locked_reason = reason or "Maintenance"
         await interaction.response.send_message(f"The confession system has been locked.\nReason: **{reason}**", ephemeral=True)
 
-    @app_commands.command(name="confession unlock", description="Unlock the confession system.")
-    @app_commands.guilds(discord.Object(id=GUILD_ID))
+    @confession.command(name="unlock", description="Unlock the confession system.")
     @app_commands.checks.has_permissions(manage_channels=True)
     async def unlock_confessions(self, interaction: discord.Interaction) -> None:
         """Unlock the confession system."""
