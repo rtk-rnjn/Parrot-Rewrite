@@ -62,7 +62,10 @@ class IndiaUnfilteredMessageEvents(commands.Cog):
             return
 
         display_name = member.display_name
-        moderated_name = "Moderated Nickname"
+        # we try to remove non ASCII nicknames, if name == "" then means we have to use moderated name
+        moderated_name = re.sub(r"[^\x00-\x7F]+", "", display_name).strip()
+        if not moderated_name:
+            moderated_name = "Moderated Nickname"
 
         if (
             not ASCII_ONLY_REGEX.match(display_name)
@@ -74,7 +77,8 @@ class IndiaUnfilteredMessageEvents(commands.Cog):
                 await member.edit(nick=moderated_name, reason="Non-ASCII characters in nickname")
                 await message.channel.send(
                     f"{member.mention}, your nickname has been changed to '`{moderated_name}`' because it contained non-ASCII characters. "
-                    "Please choose a nickname with only standard English characters."
+                    "Please choose a nickname with only standard English characters.",
+                    delete_after=15,
                 )
             except discord.HTTPException:
                 pass  # Failed to change nickname for some other reason
