@@ -219,9 +219,7 @@ class Moderation(commands.Cog):
     async def ban(
         self,
         ctx: Context[Parrot],
-        members: Annotated[list[discord.Object], commands.Greedy[UserID]] = commands.parameter(
-            description="The member(s) to ban from the server."
-        ),
+        members: Annotated[list[discord.Object], commands.Greedy[UserID]] = commands.parameter(description="The member(s) to ban from the server."),
         *,
         reason: Annotated[str, ActionReason] = commands.parameter(description="The reason for the ban.", default=None),
     ):
@@ -286,9 +284,7 @@ class Moderation(commands.Cog):
                     allowed_mentions=discord.AllowedMentions.none(),
                 )
             else:
-                await ctx.send(
-                    f"Unbanned {entry.user.mention} (ID: `{entry.user.id}`)", allowed_mentions=discord.AllowedMentions.none()
-                )
+                await ctx.send(f"Unbanned {entry.user.mention} (ID: `{entry.user.id}`)", allowed_mentions=discord.AllowedMentions.none())
             return
 
         message = await ctx.send(f"Unbanning {len(banned_entries)} members... (0/{len(banned_entries)})")
@@ -306,9 +302,7 @@ class Moderation(commands.Cog):
     async def softban(
         self,
         ctx: Context[Parrot],
-        members: Annotated[list[discord.Member], commands.Greedy[discord.Member]] = commands.parameter(
-            description="The member(s) to softban from the server."
-        ),
+        members: Annotated[list[discord.Member], commands.Greedy[discord.Member]] = commands.parameter(description="The member(s) to softban from the server."),
         *,
         reason: Annotated[str, ActionReason] = commands.parameter(description="The reason for the softban.", default=None),
     ):
@@ -369,9 +363,7 @@ class Moderation(commands.Cog):
         if len(members) == 1:
             member = members[0]
             await self.mute_handler.mute_member(ctx, member=member, until=until, reason=reason)
-            await ctx.send(
-                f"Timed out {member.mention} (ID: `{member.id}`) (expiry {until_str})", allowed_mentions=discord.AllowedMentions.none()
-            )
+            await ctx.send(f"Timed out {member.mention} (ID: `{member.id}`) (expiry {until_str})", allowed_mentions=discord.AllowedMentions.none())
             return
 
         message = await ctx.send(f"Timing out {len(members)} members... (0/{len(members)})")
@@ -425,9 +417,7 @@ class Moderation(commands.Cog):
     async def purge(
         self,
         ctx: Context[Parrot],
-        search: commands.Range[int, 1, 2000] | None = commands.parameter(
-            description="The number of messages to search through. Defaults to 100.", default=100
-        ),
+        search: commands.Range[int, 1, 2000] | None = commands.parameter(description="The number of messages to search through. Defaults to 100.", default=100),
         *,
         flags: PurgeFlags = commands.parameter(description="Flags to filter which messages to delete."),
     ):
@@ -705,13 +695,9 @@ class Moderation(commands.Cog):
     async def voice_limit(
         self,
         ctx: Context[Parrot],
-        limit: int | None = commands.parameter(
-            description="The limit to set for the voice channel. Use `0` or `none` to remove the limit."
-        ),
+        limit: int | None = commands.parameter(description="The limit to set for the voice channel. Use `0` or `none` to remove the limit."),
         *,
-        reason: Annotated[str, ActionReason] = commands.parameter(
-            description="The reason for setting the voice channel limit.", default=None
-        ),
+        reason: Annotated[str, ActionReason] = commands.parameter(description="The reason for setting the voice channel limit.", default=None),
     ):
         """To set the Voice Channel limit.
 
@@ -738,9 +724,7 @@ class Moderation(commands.Cog):
     async def voice_move(
         self,
         ctx: Context[Parrot],
-        members: Annotated[list[discord.Member], commands.Greedy[discord.Member]] = commands.parameter(
-            description="The member(s) to move to another voice channel."
-        ),
+        members: Annotated[list[discord.Member], commands.Greedy[discord.Member]] = commands.parameter(description="The member(s) to move to another voice channel."),
         channel: discord.VoiceChannel | None = commands.parameter(
             description="The voice channel to move the members to. If none specified, you must be in a voice channel to move them to."
         ),
@@ -772,9 +756,7 @@ class Moderation(commands.Cog):
                 if not members:
                     members = voicestate.channel.members
             else:
-                await ctx.error(
-                    f"{ctx.author.mention} you must specify the the channel or must be in the voice channel to use this command"
-                )
+                await ctx.error(f"{ctx.author.mention} you must specify the the channel or must be in the voice channel to use this command")
                 return
 
             try:
@@ -802,7 +784,7 @@ class Moderation(commands.Cog):
             if msg.author == ctx.me and not (msg.mentions or msg.role_mentions):
                 await msg.delete()
                 count += 1
-        return {'Bot': count}
+        return {"Bot": count}
 
     async def _complex_cleanup_strategy(self, ctx: Context[Parrot], search: int):
         prefixes = tuple(await self.bot.get_guild_prefix(ctx.guild))  # thanks startswith
@@ -831,11 +813,7 @@ class Moderation(commands.Cog):
         return Counter(m.author.display_name for m in deleted)
 
     @commands.command(name="cleanup")
-    async def cleanup(
-        self,
-        ctx: Context[Parrot],
-        search: int = commands.parameter(description="The number of messages to search through.", default=100),
-    ):
+    async def cleanup(self, ctx: Context[Parrot], search: int = commands.parameter(description="The number of messages to search through.", default=100)):
         strategy = self._basic_cleanup_strategy
         is_mod = ctx.channel.permissions_for(ctx.author).manage_messages
         if ctx.channel.permissions_for(ctx.me).manage_messages:
@@ -853,11 +831,11 @@ class Moderation(commands.Cog):
         deleted = sum(spammers.values())
         messages = [f'{deleted} message{" was" if deleted == 1 else "s were"} removed.']
         if deleted:
-            messages.append('')
+            messages.append("")
             spammers = sorted(spammers.items(), key=lambda t: t[1], reverse=True)
-            messages.extend(f'- **{author}**: {count}' for author, count in spammers)
+            messages.extend(f"- **{author}**: {count}" for author, count in spammers)
 
-        await ctx.send('\n'.join(messages), delete_after=10)
+        await ctx.send("\n".join(messages), delete_after=10)
 
 
 async def setup(bot: Parrot) -> None:

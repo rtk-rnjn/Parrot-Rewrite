@@ -188,16 +188,9 @@ async def haskell_ref(ctx: Context[Parrot], text: str):
     assert soup is not None
 
     title = soup.find("h1", id="firstHeading").string
-    description = "\n".join(
-        [
-            markdownify(p)
-            for p in soup.find_all(lambda x: x.name in ["p", "li"] and tuple(x.parents)[1].name not in ("td", "li"), limit=6)
-        ]
-    )[:2048]
+    description = "\n".join([markdownify(p) for p in soup.find_all(lambda x: x.name in ["p", "li"] and tuple(x.parents)[1].name not in ("td", "li"), limit=6)])[:2048]
 
     emb = discord.Embed(title=title, description=description, url=url)
-    emb.set_thumbnail(
-        url="https://wiki.haskell.org/wikiupload/thumb/4/4a/HaskellLogoStyPreview-1.png/120px-HaskellLogoStyPreview-1.png"
-    )
+    emb.set_thumbnail(url="https://wiki.haskell.org/wikiupload/thumb/4/4a/HaskellLogoStyPreview-1.png/120px-HaskellLogoStyPreview-1.png")
 
     await ctx.send(embed=emb)

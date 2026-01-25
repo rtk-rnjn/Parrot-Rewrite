@@ -79,9 +79,7 @@ class BookmarkForm(discord.ui.Modal):
         try:
             await self.dm_bookmark(interaction, self.message, title)
         except discord.Forbidden:
-            await interaction.response.send_message(
-                embed=RTFM.build_error_embed("Enable your DMs to receive the bookmark."), ephemeral=True
-            )
+            await interaction.response.send_message(embed=RTFM.build_error_embed("Enable your DMs to receive the bookmark."), ephemeral=True)
             return
 
         await interaction.response.send_message(embed=RTFM.build_success_reply_embed(self.message), ephemeral=True)
@@ -102,9 +100,7 @@ class RTFM(commands.Cog):
         self.fetch_readme.start()
         self._python_cached = self.bot.assets.python_tags
 
-        self.__bookmark_context_menu_callback = app_commands.ContextMenu(
-            name="Bookmark", callback=self._bookmark_context_menu_callback
-        )
+        self.__bookmark_context_menu_callback = app_commands.ContextMenu(name="Bookmark", callback=self._bookmark_context_menu_callback)
         self.bot.tree.add_command(self.__bookmark_context_menu_callback)
 
     @tasks.loop(minutes=60)
@@ -154,18 +150,9 @@ class RTFM(commands.Cog):
         if isinstance(user, str):
             return discord.Embed(title="You DM(s) are closed!", description=user)
 
-        return discord.Embed(
-            title="You DM(s) are closed!", description=f"{user.mention}, please enable your DMs to receive the bookmark."
-        )
+        return discord.Embed(title="You DM(s) are closed!", description=f"{user.mention}, please enable your DMs to receive the bookmark.")
 
-    async def action_bookmark(
-        self,
-        *,
-        channel: discord.abc.MessageableChannel,
-        user: discord.Member | discord.User,
-        target_message: discord.Message,
-        title: str,
-    ) -> None:
+    async def action_bookmark(self, *, channel: discord.abc.MessageableChannel, user: discord.Member | discord.User, target_message: discord.Message, title: str) -> None:
         """Sends the bookmark DM, or sends an error embed when a user bookmarks a message."""
         try:
             embed = self.build_bookmark_dm(target_message, title=title)
@@ -178,11 +165,7 @@ class RTFM(commands.Cog):
     async def send_reaction_embed(channel: discord.abc.MessageableChannel, target_message: discord.Message) -> discord.Message:
         """Sends an embed, with a reaction, so users can react to bookmark the message too."""
         message = await channel.send(
-            embed=discord.Embed(
-                description=(
-                    f"React with {BOOKMARK_EMOJI} to be sent your very own bookmark to [this message]({target_message.jump_url})."
-                )
-            )
+            embed=discord.Embed(description=(f"React with {BOOKMARK_EMOJI} to be sent your very own bookmark to [this message]({target_message.jump_url})."))
         )
 
         await message.add_reaction(BOOKMARK_EMOJI)
@@ -269,14 +252,10 @@ class RTFM(commands.Cog):
 
     @python.command(name="list", aliases=["ls", "all"])
     async def python_list(self, ctx: Context[Parrot]) -> None:
-        await ctx.send(
-            embed=discord.Embed(title="List of available tutorials", description="`" + "`, `".join(self._python_cached.keys()) + "`")
-        )
+        await ctx.send(embed=discord.Embed(title="List of available tutorials", description="`" + "`, `".join(self._python_cached.keys()) + "`"))
 
     @commands.command(aliases=["pypi"])
-    async def pypisearch(
-        self, ctx: Context[Parrot], package: str = commands.parameter(description="The package to search for.")
-    ) -> None:
+    async def pypisearch(self, ctx: Context[Parrot], package: str = commands.parameter(description="The package to search for.")) -> None:
         """Get info about a Python package directly from PyPi."""
         res_raw = await self.get_pypi_package(f"https://pypi.org/pypi/{package}/json")
 
@@ -316,9 +295,7 @@ class RTFM(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(aliases=["npm"])
-    async def npmsearch(
-        self, ctx: Context[Parrot], package: str = commands.parameter(description="The package to search for.")
-    ) -> None:
+    async def npmsearch(self, ctx: Context[Parrot], package: str = commands.parameter(description="The package to search for.")) -> None:
         """Get info about a NPM package directly from the NPM Registry."""
         res_raw = await self.get_pypi_package(f"https://registry.npmjs.org/{package}/")
 
@@ -448,9 +425,9 @@ class RTFM(commands.Cog):
     async def reference(
         self,
         ctx: Context[Parrot],
-        language: Literal[
-            "csp", "git", "git-guides", "haskell", "html5", "http-headers", "http-methods", "http-status-codes", "sql"
-        ] = commands.parameter(description="The language to get the reference from."),
+        language: Literal["csp", "git", "git-guides", "haskell", "html5", "http-headers", "http-methods", "http-status-codes", "sql"] = commands.parameter(
+            description="The language to get the reference from."
+        ),
         *,
         query: str = commands.parameter(description="The element to get the reference for."),
     ):
@@ -546,9 +523,7 @@ class RTFM(commands.Cog):
         self,
         ctx: Context[Parrot],
         value: int = commands.parameter(description="The value to convert."),
-        unit: Literal["o", "kio", "mio", "gio", "tio", "pio", "eio", "zio", "yio"] = commands.parameter(
-            description="The unit of the given value.", default="mio"
-        ),
+        unit: Literal["o", "kio", "mio", "gio", "tio", "pio", "eio", "zio", "yio"] = commands.parameter(description="The unit of the given value.", default="mio"),
     ):
         """Shows byte conversions of given value."""
         units = ("o", "kio", "mio", "gio", "tio", "pio", "eio", "zio", "yio")
@@ -586,16 +561,12 @@ class RTFM(commands.Cog):
             # Available
             hash_object = hashlib.new(algo, text.encode("utf-8"))
 
-        emb = discord.Embed(title=f"{algorithm} hash", description=hash_object.hexdigest()).set_footer(
-            text=f"Invoked by {str(ctx.message.author)}"
-        )
+        emb = discord.Embed(title=f"{algorithm} hash", description=hash_object.hexdigest()).set_footer(text=f"Invoked by {str(ctx.message.author)}")
 
         await ctx.reply(embed=emb)
 
     @commands.command()
-    async def charinfo(
-        self, ctx: Context[Parrot], *, characters: str = commands.parameter(description="The characters to get information about.")
-    ):
+    async def charinfo(self, ctx: Context[Parrot], *, characters: str = commands.parameter(description="The characters to get information about.")):
         """Shows you information about a number of characters.
 
         Only up to 25 characters at a time.
@@ -624,18 +595,14 @@ class RTFM(commands.Cog):
             await ctx.send_help(ctx.command)
 
     @github_group.command(name="user", aliases=("userinfo", "u"))  # Thanks `will.#0021` (211756205721255947)
-    async def github_user_info(
-        self, ctx: Context[Parrot], username: str = commands.parameter(description="The GitHub username to fetch information for.")
-    ) -> None:
+    async def github_user_info(self, ctx: Context[Parrot], username: str = commands.parameter(description="The GitHub username to fetch information for.")) -> None:
         """Fetches a user's GitHub information."""
         async with ctx.typing():
             user_data = await self.fetch_data(f"{GITHUB_API_URL}/users/{quote_plus(username)}")
 
             # User_data will not have a message key if the user exists
             if "message" in user_data:
-                embed = discord.Embed(
-                    title="404!!", description=f"The profile for `{username}` was not found.", colour=ctx.author.color
-                )
+                embed = discord.Embed(title="404!!", description=f"The profile for `{username}` was not found.", colour=ctx.author.color)
 
                 await ctx.send(embed=embed)
                 return
@@ -665,9 +632,9 @@ class RTFM(commands.Cog):
             )
 
             if user_data["type"] == "User":
-                embed.add_field(
-                    name="Followers", value=f"[{user_data['followers']}]({user_data['html_url']}?tab=followers)"
-                ).add_field(name="Following", value=f"[{user_data['following']}]({user_data['html_url']}?tab=following)")
+                embed.add_field(name="Followers", value=f"[{user_data['followers']}]({user_data['html_url']}?tab=followers)").add_field(
+                    name="Following", value=f"[{user_data['following']}]({user_data['html_url']}?tab=following)"
+                )
 
             if user_data["type"] == "User":
                 embed.add_field(name="Gists", value=f"[{gists}](https://gist.github.com/{quote_plus(username, safe='')})")
@@ -681,11 +648,7 @@ class RTFM(commands.Cog):
         """
         repo = "/".join(repository)
         if repo.count("/") != 1:
-            embed = discord.Embed(
-                title="Invalid",
-                description="The repository should look like `user/reponame` or `user reponame`.",
-                colour=ctx.author.color,
-            )
+            embed = discord.Embed(title="Invalid", description="The repository should look like `user/reponame` or `user reponame`.", colour=ctx.author.color)
 
             await ctx.send(embed=embed)
             return
@@ -700,12 +663,7 @@ class RTFM(commands.Cog):
                 await ctx.send(embed=embed)
                 return
 
-        embed = discord.Embed(
-            title=repo_data["name"],
-            description=repo_data["description"],
-            colour=discord.Colour.og_blurple(),
-            url=repo_data["html_url"],
-        )
+        embed = discord.Embed(title=repo_data["name"], description=repo_data["description"], colour=discord.Colour.og_blurple(), url=repo_data["html_url"])
 
         # If it's a fork, then it will have a parent key
         try:
@@ -781,18 +739,14 @@ class RTFM(commands.Cog):
         )
 
         for article in articles:
-            article_embed.add_field(
-                name=unescape(article["title"]), value=REAL_PYTHON_ARTICLE_URL.format(article_url=article["url"]), inline=False
-            )
+            article_embed.add_field(name=unescape(article["title"]), value=REAL_PYTHON_ARTICLE_URL.format(article_url=article["url"]), inline=False)
         article_embed.set_footer(text="Click the links to go to the articles.")
 
         await ctx.send(embed=article_embed)
 
     @commands.command(aliases=["so"])
     @commands.cooldown(1, 15, commands.cooldowns.BucketType.user)
-    async def stackoverflow(
-        self, ctx: Context[Parrot], *, query: str = commands.parameter(description="The search terms to look for.")
-    ) -> None:
+    async def stackoverflow(self, ctx: Context[Parrot], *, query: str = commands.parameter(description="The search terms to look for.")) -> None:
         """Sends the top 5 results of a search query from stackoverflow."""
         params = {**STACKOVERFLOW_PARAMS, "q": query}
         async with self.bot.http_session.get(url=STACKOVERFLOW_BASE_API, params=params) as response:
@@ -802,9 +756,7 @@ class RTFM(commands.Cog):
                 await ctx.send(
                     embed=discord.Embed(
                         title="Error in fetching results from Stackoverflow",
-                        description=(
-                            "Sorry, there was en error while trying to fetch data from the Stackoverflow website. Please try again in some time"
-                        ),
+                        description=("Sorry, there was en error while trying to fetch data from the Stackoverflow website. Please try again in some time"),
                         color=ctx.author.color,
                     )
                 )
@@ -838,9 +790,7 @@ class RTFM(commands.Cog):
         try:
             await ctx.send(embed=embed)
         except discord.HTTPException:
-            search_query_too_long = discord.Embed(
-                title="Your search query is too long, please try shortening your search query", color=ctx.author.color
-            )
+            search_query_too_long = discord.Embed(title="Your search query is too long, please try shortening your search query", color=ctx.author.color)
             await ctx.send(embed=search_query_too_long)
 
     @commands.command(name="cheat", aliases=["cht.sh", "cheatsheet", "cheat-sheet", "cht"])
@@ -862,12 +812,7 @@ class RTFM(commands.Cog):
         await interface.send_to(ctx)
 
     @commands.command(aliases=["wtfp"])
-    async def wtfpython(
-        self,
-        ctx: Context[Parrot],
-        *,
-        query: str | None = commands.parameter(description="The search terms to look for.", default=None),
-    ) -> None:
+    async def wtfpython(self, ctx: Context[Parrot], *, query: str | None = commands.parameter(description="The search terms to look for.", default=None)) -> None:
         """Search WTF Python repository.
         Gets the link of the fuzzy matched query from https://github.com/satwikkansal/wtfpython.
         """
@@ -902,9 +847,7 @@ class RTFM(commands.Cog):
     async def bookmark(
         self,
         ctx: Context[Parrot],
-        target_message: Annotated[discord.Message | None, WrappedMessageConverter] = commands.parameter(
-            description="The message to bookmark.", default=None
-        ),
+        target_message: Annotated[discord.Message | None, WrappedMessageConverter] = commands.parameter(description="The message to bookmark.", default=None),
         *,
         title: str = commands.parameter(description="The title of the bookmark.", default="Bookmark"),
     ) -> None:
@@ -926,9 +869,7 @@ class RTFM(commands.Cog):
         # Prevent users from bookmarking a message in a channel they don't have access to
         permissions = target_message.channel.permissions_for(ctx.author)
         if not permissions.read_messages:
-            embed = discord.Embed(
-                title="Permission", color=ctx.author.color, description="You don't have permission to view this channel."
-            )
+            embed = discord.Embed(title="Permission", color=ctx.author.color, description="You don't have permission to view this channel.")
             await ctx.send(embed=embed)
             return
 
@@ -1033,9 +974,7 @@ class RTFM(commands.Cog):
             embed_color = int(kata_information["rank"]["name"].replace(" kyu", ""))
             kata_difficulty = kata_information["rank"]["name"]
 
-        kata_embed = discord.Embed(
-            title=kata_information["name"], description=kata_description, color=MAPPING_OF_KYU[embed_color], url=kata_url
-        )
+        kata_embed = discord.Embed(title=kata_information["name"], description=kata_description, color=MAPPING_OF_KYU[embed_color], url=kata_url)
         kata_embed.add_field(name="Difficulty", value=kata_difficulty, inline=False)
         return kata_embed
 
@@ -1044,9 +983,7 @@ class RTFM(commands.Cog):
         kata_url = f"https://codewars.com/kata/{kata_information['id']}"
 
         languages = "\n".join(map(str.title, kata_information["languages"]))
-        return discord.Embed(
-            title=kata_information["name"], description=f"```yaml\nSupported Languages:\n{languages}\n```", url=kata_url
-        )
+        return discord.Embed(title=kata_information["name"], description=f"```yaml\nSupported Languages:\n{languages}\n```", url=kata_url)
 
     @staticmethod
     def tags_embed(kata_information: dict[str, Any]) -> discord.Embed:
@@ -1129,9 +1066,7 @@ class RTFM(commands.Cog):
         tags_embed = self.tags_embed(kata_information)
         miscellaneous_embed = self.miscellaneous_embed(kata_information)
 
-        dropdown = InformationDropdown(
-            main_embed=kata_embed, language_embed=language_embed, tags_embed=tags_embed, other_info_embed=miscellaneous_embed
-        )
+        dropdown = InformationDropdown(main_embed=kata_embed, language_embed=language_embed, tags_embed=tags_embed, other_info_embed=miscellaneous_embed)
         kata_view = self.create_view(dropdown, f"https://codewars.com/kata/{first_kata_id}")
         original_message: discord.Message = await ctx.send(embed=kata_embed, view=kata_view)
         dropdown.original_message = original_message

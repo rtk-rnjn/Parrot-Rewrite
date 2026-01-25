@@ -168,9 +168,7 @@ class Fun(commands.Cog, ColorHandler):
 
         number_of_chances = math.log(upper - lower + 1, 2)
         number_of_chances = round(number_of_chances)
-        await ctx.reply(
-            f"{ctx.author.mention} Guess a number between **{lower}** and **{upper}** in **{number_of_chances}** chances. Goodluck"
-        )
+        await ctx.reply(f"{ctx.author.mention} Guess a number between **{lower}** and **{upper}** in **{number_of_chances}** chances. Goodluck")
         count = 0
 
         def check(m: discord.Message) -> bool:
@@ -221,12 +219,7 @@ class Fun(commands.Cog, ColorHandler):
         await ctx.send(f"{ctx.author.mention} typing test started. Type the following phrase: ```ini\n[{fake_random_line}]```")
 
         def matches_author_and_channel(m: discord.Message) -> bool:
-            return (
-                m.author.id == ctx.author.id
-                and m.channel.id == ctx.channel.id
-                and (rf_ratio(m.content, random_line) >= 65)
-                and "\u200b" not in m.content
-            )
+            return m.author.id == ctx.author.id and m.channel.id == ctx.channel.id and (rf_ratio(m.content, random_line) >= 65) and "\u200b" not in m.content
 
         ini = time.perf_counter()
 
@@ -241,11 +234,7 @@ class Fun(commands.Cog, ColorHandler):
         accuracy = rf_ratio(msg.content, random_line)
         wpm = round(len(fakecontent.split(" ")) / (fin - ini) * 60, 2)
 
-        await ctx.send(
-            f"{ctx.author.mention} your accuracy is `{accuracy}`%. "
-            f"You typed in `{round(fin - ini, 2)}` seconds. "
-            f"Words per minute: `{wpm}`"
-        )
+        await ctx.send(f"{ctx.author.mention} your accuracy is `{accuracy}`%. " f"You typed in `{round(fin - ini, 2)}` seconds. " f"Words per minute: `{wpm}`")
 
     @commands.command(name="reactiontest")
     @commands.bot_has_permissions(embed_links=True, add_reactions=True)
@@ -286,9 +275,7 @@ class Fun(commands.Cog, ColorHandler):
     @commands.command(name="cathi")
     @commands.max_concurrency(1, per=commands.BucketType.channel)
     @commands.cooldown(1, 60, commands.BucketType.user)
-    async def fun_animation_cathi(
-        self, ctx: Context[Parrot], text: str = commands.parameter(description="The text for the cat to say.", default="Hi...")
-    ):
+    async def fun_animation_cathi(self, ctx: Context[Parrot], text: str = commands.parameter(description="The text for the cat to say.", default="Hi...")):
         """Make a cat say something."""
         # please dont DM to ask what is this, I forget
         m: discord.Message = await ctx.reply("starting")
@@ -379,19 +366,12 @@ class Fun(commands.Cog, ColorHandler):
         dot_rotator = itertools.cycle([".", "..", "..."])
 
         ls = [
-            f"{Fore.WHITE}[{Fore.GREEN}{D(i)}{Fore.WHITE}] {Fore.YELLOW}{next(rotator)} "
-            f"{Fore.BLUE}{virus}-virus.exe Packing files{next(dot_rotator)}"
+            f"{Fore.WHITE}[{Fore.GREEN}{D(i)}{Fore.WHITE}] {Fore.YELLOW}{next(rotator)} " f"{Fore.BLUE}{virus}-virus.exe Packing files{next(dot_rotator)}"
             for i in range(3, SHIFTER, 3)
         ]
-        ls.append(
-            f"{Fore.WHITE}[{Fore.GREEN}{'Successfully downloaded':<24}{Fore.WHITE}] "
-            f"{Fore.YELLOW}{next(rotator)} {Fore.BLUE}{virus}-virus.exe"
-        )
+        ls.append(f"{Fore.WHITE}[{Fore.GREEN}{'Successfully downloaded':<24}{Fore.WHITE}] " f"{Fore.YELLOW}{next(rotator)} {Fore.BLUE}{virus}-virus.exe")
         for _ in range(3):
-            ls.append(
-                f"{Fore.WHITE}[{Fore.RED}{f'Injecting virus{next(dot_rotator)}':<24}{Fore.WHITE}] "
-                f"{Fore.YELLOW}{next(rotator)} {Fore.BLUE}{virus}-virus.exe"
-            )
+            ls.append(f"{Fore.WHITE}[{Fore.RED}{f'Injecting virus{next(dot_rotator)}':<24}{Fore.WHITE}] " f"{Fore.YELLOW}{next(rotator)} {Fore.BLUE}{virus}-virus.exe")
         ls.append(f"{Fore.GREEN}Successfully {Fore.WHITE}Injected {Fore.RED}{virus}-virus.exe into {Fore.YELLOW}{user.name}")
         for i in ls:
             await m.edit(content=f"{PREFIX}{i}{SUFFIX}")
@@ -485,12 +465,7 @@ class Fun(commands.Cog, ColorHandler):
             await asyncio.sleep(1)
 
     @commands.group(aliases=("color",), invoke_without_command=True)
-    async def colour(
-        self,
-        ctx: Context[Parrot],
-        *,
-        colour_input: str = commands.parameter(description="The colour to display.", displayed_name="color"),
-    ) -> None:
+    async def colour(self, ctx: Context[Parrot], *, colour_input: str = commands.parameter(description="The colour to display.", displayed_name="color")) -> None:
         """Create an embed that displays colour information.
 
         If no subcommand is called, a randomly selected colour will be shown.
@@ -527,8 +502,7 @@ class Fun(commands.Cog, ColorHandler):
         """Create an embed from an HSV input."""
         if (hue not in range(361)) or any(c not in range(101) for c in (saturation, value)):
             raise commands.BadArgument(
-                message="Hue can only be from 0 to 360. Saturation and Value can only be from 0 to 100. "
-                f"User input was: `{hue, saturation, value}`."
+                message="Hue can only be from 0 to 360. Saturation and Value can only be from 0 to 100. " f"User input was: `{hue, saturation, value}`."
             )
         hsv_tuple = cast(tuple[int, int, int], ImageColor.getrgb(f"hsv({hue}, {saturation}%, {value}%)"))
         await self.send_colour_response(ctx, hsv_tuple)
@@ -544,8 +518,7 @@ class Fun(commands.Cog, ColorHandler):
         """Create an embed from an HSL input."""
         if (hue not in range(361)) or any(c not in range(101) for c in (saturation, lightness)):
             raise commands.BadArgument(
-                message="Hue can only be from 0 to 360. Saturation and Lightness can only be from 0 to 100. "
-                f"User input was: `{hue, saturation, lightness}`."
+                message="Hue can only be from 0 to 360. Saturation and Lightness can only be from 0 to 100. " f"User input was: `{hue, saturation, lightness}`."
             )
         hsl_tuple = cast(tuple[int, int, int], ImageColor.getrgb(f"hsl({hue}, {saturation}%, {lightness}%)"))
         await self.send_colour_response(ctx, hsl_tuple)
@@ -561,26 +534,21 @@ class Fun(commands.Cog, ColorHandler):
     ) -> None:
         """Create an embed from a CMYK input."""
         if any(c not in range(101) for c in (cyan, magenta, yellow, key)):
-            raise commands.BadArgument(
-                message=f"CMYK values can only be from 0 to 100. User input was: `{cyan, magenta, yellow, key}`."
-            )
+            raise commands.BadArgument(message=f"CMYK values can only be from 0 to 100. User input was: `{cyan, magenta, yellow, key}`.")
         r = round(255 * (1 - (cyan / 100)) * (1 - (key / 100)))
         g = round(255 * (1 - (magenta / 100)) * (1 - (key / 100)))
         b = round(255 * (1 - (yellow / 100)) * (1 - (key / 100)))
         await self.send_colour_response(ctx, (r, g, b))
 
     @colour.command()
-    async def hex(
-        self, ctx: Context[Parrot], hex_code: str = commands.parameter(description="The HEX color code.", displayed_name="hex")
-    ) -> None:
+    async def hex(self, ctx: Context[Parrot], hex_code: str = commands.parameter(description="The HEX color code.", displayed_name="hex")) -> None:
         """Create an embed from a HEX input."""
         if hex_code[0] != "#":
             hex_code = f"#{hex_code}"
 
         if len(hex_code) not in (4, 5, 7, 9) or any(digit not in string.hexdigits for digit in hex_code[1:]):
             raise commands.BadArgument(
-                message=f"Cannot convert `{hex_code}` to a recognizable Hex format. "
-                "Hex values must be hexadecimal and take the form *#RRGGBB* or *#RGB*."
+                message=f"Cannot convert `{hex_code}` to a recognizable Hex format. " "Hex values must be hexadecimal and take the form *#RRGGBB* or *#RGB*."
             )
 
         hex_tuple = ImageColor.getrgb(hex_code)
@@ -598,11 +566,7 @@ class Fun(commands.Cog, ColorHandler):
         """Create an embed from a name input."""
         hex_colour = self.match_colour_name(user_colour_name)
         if hex_colour is None:
-            name_error_embed = discord.Embed(
-                title="No colour match found.",
-                description=f"No colour found for: `{user_colour_name}`",
-                colour=discord.Color.dark_red(),
-            )
+            name_error_embed = discord.Embed(title="No colour match found.", description=f"No colour found for: `{user_colour_name}`", colour=discord.Color.dark_red())
             await ctx.send(embed=name_error_embed)
             return
         hex_tuple = ImageColor.getrgb(hex_colour)
@@ -616,9 +580,7 @@ class Fun(commands.Cog, ColorHandler):
         await self.send_colour_response(ctx, hex_tuple)
 
     @commands.command(name="urbandictionary", aliases=["ud", "urban"])
-    async def urban_dictionary(
-        self, ctx: Context[Parrot], *, term: str = commands.parameter(description="The term to define.")
-    ) -> None:
+    async def urban_dictionary(self, ctx: Context[Parrot], *, term: str = commands.parameter(description="The term to define.")) -> None:
         """Fetch a definition from Urban Dictionary."""
         await self.get_urban_definition(ctx, term)
 

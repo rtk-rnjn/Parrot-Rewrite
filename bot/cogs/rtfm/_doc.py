@@ -47,9 +47,7 @@ async def python_doc(ctx: Context, text: str) -> discord.Message | None:
     content = [f"[{a.string}](https://docs.python.org/3/{a.get('href')})" for a in links]
 
     emb = discord.Embed(title="Python 3 docs")
-    emb.set_thumbnail(
-        url="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Python-logo-notext.svg/240px-Python-logo-notext.svg.png"
-    )
+    emb.set_thumbnail(url="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Python-logo-notext.svg/240px-Python-logo-notext.svg.png")
     emb.description = f"Results for `{text}` :\n" + "\n".join(content)
 
     return await ctx.send(embed=emb)
@@ -120,9 +118,7 @@ async def haskell_doc(ctx: Context, text: str) -> discord.Message | None:
     ul = results.find("ul", "mw-search-results")
 
     emb = discord.Embed(title="Haskell docs")
-    emb.set_thumbnail(
-        url="https://wiki.haskell.org/wikiupload/thumb/4/4a/HaskellLogoStyPreview-1.png/120px-HaskellLogoStyPreview-1.png"
-    )
+    emb.set_thumbnail(url="https://wiki.haskell.org/wikiupload/thumb/4/4a/HaskellLogoStyPreview-1.png/120px-HaskellLogoStyPreview-1.png")
 
     content = []
     ls = await asyncio.to_thread(ul.find_all, "li", limit=10)

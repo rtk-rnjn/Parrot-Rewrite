@@ -112,9 +112,7 @@ class SnoozeView(discord.ui.View):
 
     async def interaction_check(self, interaction: discord.Interaction[Parrot]) -> bool:
         if interaction.user.id != self.timer_config["metadata"]["user_id"]:
-            await interaction.response.send_message(
-                f"{interaction.user.mention} This interaction button is not for you", ephemeral=True
-            )
+            await interaction.response.send_message(f"{interaction.user.mention} This interaction button is not for you", ephemeral=True)
             return False
 
         return True
@@ -140,9 +138,7 @@ class Reminders(commands.Cog):  # pylint: disable=too-many-public-methods
                 await ctx.send(f"Your current timezone is set to {tz!r}.")
 
     @timezone.command(name="set")
-    async def timezone_set(
-        self, ctx: Context[Parrot], *, timezone: TimeZone = commands.parameter(description="The timezone to set.")
-    ) -> None:
+    async def timezone_set(self, ctx: Context[Parrot], *, timezone: TimeZone = commands.parameter(description="The timezone to set.")) -> None:
         """Set your timezone.
 
         Timezones can be in the format specified by the IANA Time Zone Database, e.g. `America/New_York`, `Europe/London`, `Asia/Tokyo`, etc.
@@ -161,14 +157,10 @@ class Reminders(commands.Cog):  # pylint: disable=too-many-public-methods
         if utc_offset is not None:
             hours, remainder = divmod(utc_offset.total_seconds(), 3600)
             minutes = remainder // 60
-            await ctx.send(
-                f"Your timezone has been set to {timezone.key!r} (UTC{'+' if hours >= 0 else ''}{int(hours):02}:{int(minutes):02})."
-            )
+            await ctx.send(f"Your timezone has been set to {timezone.key!r} (UTC{'+' if hours >= 0 else ''}{int(hours):02}:{int(minutes):02}).")
 
     @timezone.command(name="info", aliases=["get", "details", "about", "more"])
-    async def timezone_info(
-        self, ctx: Context[Parrot], *, timezone: TimeZone = commands.parameter(description="The timezone to get info about.")
-    ) -> None:
+    async def timezone_info(self, ctx: Context[Parrot], *, timezone: TimeZone = commands.parameter(description="The timezone to get info about.")) -> None:
         """Get information about a timezone."""
         tz = dateutil.tz.gettz(timezone.key)
         if tz is None:
@@ -229,9 +221,7 @@ class Reminders(commands.Cog):  # pylint: disable=too-many-public-methods
         await ctx.jsk_embed_paginate(pages)
 
     @reminder.command(name="delete", aliases=["remove", "del", "rm", "cancel"])
-    async def reminder_clear(
-        self, ctx: Context[Parrot], *, reminder_id: int = commands.parameter(description="The ID of the reminder to clear.")
-    ) -> None:
+    async def reminder_clear(self, ctx: Context[Parrot], *, reminder_id: int = commands.parameter(description="The ID of the reminder to clear.")) -> None:
         """Clears a reminder by its ID."""
         timer = await self.bot.find_timer_by_counter(reminder_id)
         if timer is None:
@@ -300,9 +290,7 @@ class Reminders(commands.Cog):  # pylint: disable=too-many-public-methods
 
         due_date = arrow.get(due_date).replace(tzinfo=user_tz).datetime
 
-        metadata = ReminderMetadata(
-            user_id=ctx.author.id, guild_id=ctx.guild.id, channel_id=ctx.channel.id, message_id=ctx.message.id, content=when.arg
-        )
+        metadata = ReminderMetadata(user_id=ctx.author.id, guild_id=ctx.guild.id, channel_id=ctx.channel.id, message_id=ctx.message.id, content=when.arg)
         await self.bot.create_timer(due_date=due_date, event_name=EVENT_NAME, metadata=dict(metadata))
 
         remaining_time = discord.utils.format_dt(due_date, "R")

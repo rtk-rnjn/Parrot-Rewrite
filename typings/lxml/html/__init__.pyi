@@ -86,11 +86,9 @@ class Classes(MutableSet):
 
     def __contains__(self, name):  # -> bool:
         ...
-
     def __iter__(self): ...
     def __len__(self):  # -> int:
         ...
-
     def update(self, values):  # -> None:
         """
         Add all names from 'values'.
@@ -126,7 +124,6 @@ class HtmlMixin:
     @classes.setter
     def classes(self, classes):  # -> None:
         ...
-
     @property
     def base_url(self):
         """
@@ -170,11 +167,9 @@ class HtmlMixin:
     @label.setter
     def label(self, label):  # -> None:
         ...
-
     @label.deleter
     def label(self):  # -> None:
         ...
-
     def drop_tree(self):  # -> None:
         """
         Removes this element from the tree, including its children and
@@ -345,9 +340,7 @@ class HtmlElementClassLookup(etree.CustomElementClassLookup):
 
     _default_element_classes = ...
     def __init__(self, classes=..., mixins=...) -> None: ...
-    def lookup(
-        self, node_type, document, namespace, name
-    ):  # -> type[HtmlComment] | type[HtmlProcessingInstruction] | type[HtmlEntity] | None:
+    def lookup(self, node_type, document, namespace, name):  # -> type[HtmlComment] | type[HtmlProcessingInstruction] | type[HtmlEntity] | None:
         ...
 
 _looks_like_full_html_unicode = ...
@@ -430,7 +423,6 @@ class FormElement(HtmlElement):
     @fields.setter
     def fields(self, value):  # -> None:
         ...
-
     def form_values(self):  # -> list[Any]:
         """
         Return a list of tuples of the field values for the form.
@@ -448,11 +440,9 @@ class FormElement(HtmlElement):
     @action.setter
     def action(self, value):  # -> None:
         ...
-
     @action.deleter
     def action(self):  # -> None:
         ...
-
     @property
     def method(self):
         """
@@ -499,16 +489,13 @@ class FieldsDict(MutableMapping):
     def __getitem__(self, item): ...
     def __setitem__(self, item, value):  # -> None:
         ...
-
     def __delitem__(self, item): ...
     def keys(self): ...
     def __contains__(self, item):  # -> bool:
         ...
-
     def __iter__(self): ...
     def __len__(self):  # -> int:
         ...
-
     def __repr__(self):  # -> str:
         ...
 
@@ -531,13 +518,10 @@ class InputGetter:
     def __init__(self, form) -> None: ...
     def __repr__(self):  # -> str:
         ...
-
     def __getitem__(self, name):  # -> RadioGroup | CheckboxGroup:
         ...
-
     def __contains__(self, name):  # -> bool:
         ...
-
     def keys(self):  # -> list[Any]:
         """
         Returns all unique field names, in document order.
@@ -573,11 +557,9 @@ class InputMixin:
     @name.setter
     def name(self, value):  # -> None:
         ...
-
     @name.deleter
     def name(self):  # -> None:
         ...
-
     def __repr__(self):  # -> str:
         ...
 
@@ -597,7 +579,6 @@ class TextareaElement(InputMixin, HtmlElement):
     @value.setter
     def value(self, value):  # -> None:
         ...
-
     @value.deleter
     def value(self):  # -> None:
         ...
@@ -628,11 +609,9 @@ class SelectElement(InputMixin, HtmlElement):
     @value.setter
     def value(self, value):  # -> None:
         ...
-
     @value.deleter
     def value(self):  # -> None:
         ...
-
     @property
     def value_options(self):  # -> list[Any]:
         """
@@ -670,13 +649,10 @@ class MultipleSelectOptions(SetMixin):
 
     def __iter__(self):  # -> Generator[LiteralString | Any, Any, None]:
         ...
-
     def add(self, item):  # -> None:
         ...
-
     def remove(self, item):  # -> None:
         ...
-
     def __repr__(self):  # -> str:
         ...
 
@@ -701,11 +677,9 @@ class RadioGroup(list):
     @value.setter
     def value(self, value):  # -> None:
         ...
-
     @value.deleter
     def value(self):  # -> None:
         ...
-
     @property
     def value_options(self):  # -> list[Any]:
         """
@@ -738,11 +712,9 @@ class CheckboxGroup(list):
     @value.setter
     def value(self, value):  # -> None:
         ...
-
     @value.deleter
     def value(self):  # -> None:
         ...
-
     @property
     def value_options(self):  # -> list[Any]:
         """
@@ -762,13 +734,10 @@ class CheckboxValues(SetMixin):
     def __init__(self, group) -> None: ...
     def __iter__(self):  # -> Iterator[Any]:
         ...
-
     def add(self, value):  # -> None:
         ...
-
     def remove(self, value):  # -> None:
         ...
-
     def __repr__(self):  # -> str:
         ...
 
@@ -801,11 +770,9 @@ class InputElement(InputMixin, HtmlElement):
     @value.setter
     def value(self, value):  # -> None:
         ...
-
     @value.deleter
     def value(self):  # -> None:
         ...
-
     @property
     def type(self):
         """
@@ -816,7 +783,6 @@ class InputElement(InputMixin, HtmlElement):
     @type.setter
     def type(self, value):  # -> None:
         ...
-
     @property
     def checkable(self):  # -> bool:
         """
@@ -857,7 +823,6 @@ class LabelElement(HtmlElement):
     @for_element.setter
     def for_element(self, other):  # -> None:
         ...
-
     @for_element.deleter
     def for_element(self):  # -> None:
         ...
@@ -877,9 +842,7 @@ def xhtml_to_html(xhtml):  # -> None:
 __str_replace_meta_content_type = ...
 __bytes_replace_meta_content_type = ...
 
-def tostring(
-    doc, pretty_print=..., include_meta_content_type=..., encoding=..., method=..., with_tail=..., doctype=...
-):  # -> str | bytes:
+def tostring(doc, pretty_print=..., include_meta_content_type=..., encoding=..., method=..., with_tail=..., doctype=...):  # -> str | bytes:
     """Return an HTML string representation of the document.
 
     Note: if include_meta_content_type is true this will create a

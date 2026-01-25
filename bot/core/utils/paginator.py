@@ -177,9 +177,7 @@ class PaginationView(discord.ui.View, Generic[PageT]):
         elif isinstance(currnet_entity, discord.File):
             await self.message.edit(attachments=[currnet_entity], content=None, embed=None, view=self)
         else:
-            await self.message.edit(
-                content=f"{self._str_prefix}{currnet_entity}{self._str_suffix}", embed=None, attachments=[], view=self
-            )
+            await self.message.edit(content=f"{self._str_prefix}{currnet_entity}{self._str_suffix}", embed=None, attachments=[], view=self)
 
     @classmethod
     async def paginate_embed(cls, ctx: Context, embed_list: list[PageT]):

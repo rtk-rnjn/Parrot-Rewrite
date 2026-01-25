@@ -70,9 +70,7 @@ class Music(commands.Cog):
             await ctx.tick(checked=False)
 
     @commands.command(name="play", aliases=["p"])
-    async def play(
-        self, ctx: Context[Parrot], *, query: str = commands.parameter(description="The URL or search term to play.")
-    ) -> None:
+    async def play(self, ctx: Context[Parrot], *, query: str = commands.parameter(description="The URL or search term to play.")) -> None:
         """Play a song from a URL or search term."""
 
         if not ctx.voice_client or not ctx.voice_client.is_connected:
@@ -81,7 +79,6 @@ class Music(commands.Cog):
 
         node = self.bot.lavalink_node_pool.get_best_node(algorithm=pomice.NodeAlgorithm.by_players)
         for search_type in [pomice.SearchType.scsearch]:
-
             result = await node.get_tracks(query, search_type=search_type, ctx=ctx)
             if result is not None:
                 break
@@ -119,8 +116,7 @@ class Music(commands.Cog):
         current_length = player.position
 
         await ctx.reply(
-            f"**Now Playing:** [{title}](<{url}>) by {author}\n"
-            f"{self.__create_duration_string(total_duration=duration, current_duration=current_length)}",
+            f"**Now Playing:** [{title}](<{url}>) by {author}\n" f"{self.__create_duration_string(total_duration=duration, current_duration=current_length)}",
             suppress_embeds=True,
         )
 
@@ -190,9 +186,7 @@ class Music(commands.Cog):
         await ctx.tick(emoji="\N{HOURGLASS WITH FLOWING SAND}")
         for host, port, password, identifier in providers:
             try:
-                await self.bot.lavalink_node_pool.create_node(
-                    bot=self.bot, host=host, port=int(port), password=password, identifier=identifier
-                )
+                await self.bot.lavalink_node_pool.create_node(bot=self.bot, host=host, port=int(port), password=password, identifier=identifier)
             except Exception as e:
                 errors.append((identifier, str(e)))
                 continue

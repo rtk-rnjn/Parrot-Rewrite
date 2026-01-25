@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import random
 
+import arrow
 import discord
 from discord import app_commands
 from discord.ext import commands
@@ -54,9 +55,7 @@ class ConfessionModal(discord.ui.Modal, title="Anonymous Confession"):
         )
         if isinstance(channel, discord.abc.Messageable):
             await channel.send(embed=embed)
-        await interaction.followup.send(
-            f"Your confession has been sent anonymously as `{self.name.value or self.random_name}`!", ephemeral=True
-        )
+        await interaction.followup.send(f"Your confession has been sent anonymously as `{self.name.value or self.random_name}`!", ephemeral=True)
 
 
 class ConfessionCommands(commands.Cog):
@@ -79,9 +78,7 @@ class ConfessionCommands(commands.Cog):
         name = f"{random_adjective} {random_noun}"
 
         if self.locked:
-            await interaction.response.send_message(
-                f"The confession system is currently locked. Please try again later.\nReason: **{self.locked_reason}**", ephemeral=True
-            )
+            await interaction.response.send_message(f"The confession system is currently locked. Please try again later.\nReason: **{self.locked_reason}**", ephemeral=True)
             return
 
         modal = ConfessionModal(text=text, random_name=name)
@@ -91,18 +88,14 @@ class ConfessionCommands(commands.Cog):
     async def confess_error(self, interaction: discord.Interaction, error: app_commands.AppCommandError) -> None:
         """Handle errors for the confess command."""
         if isinstance(error, app_commands.CommandOnCooldown):
-            await interaction.response.send_message(
-                f"You are on cooldown. Please wait {int(error.retry_after)} seconds before using this command again.", ephemeral=True
-            )
+            now = arrow.utcnow().shift(seconds=error.retry_after).datetime
+            relative_time = discord.utils.format_dt(now, style="R")
+            await interaction.response.send_message(f"You are on cooldown. You are in command timeout. Retry **{relative_time}**", ephemeral=True)
             return
 
-        await interaction.response.send_message(
-            "An unexpected error occurred while processing your confession. Please try again later.", ephemeral=True
-        )
+        await interaction.response.send_message("An unexpected error occurred while processing your confession. Please try again later.", ephemeral=True)
 
-    confession = app_commands.Group(
-        name="confession", description="Confession related commands.", guild_ids=[GUILD_ID], guild_only=True
-    )
+    confession = app_commands.Group(name="confession", description="Confession related commands.", guild_ids=[GUILD_ID], guild_only=True)
 
     @confession.command(name="rules", description="View the rules for making confessions.")
     async def confession_rules(self, interaction: discord.Interaction) -> None:
@@ -114,9 +107,7 @@ class ConfessionCommands(commands.Cog):
             "4. This is not anonymous general chat. Keep confessions relevant and appropriate for the community.\n"
             "5. The moderators reserve the right to remove any confession that violates these rules or is deemed inappropriate.\n"
         )
-        embed = discord.Embed(
-            title="Confession Rules", description=rules, color=discord.Color.blue(), timestamp=discord.utils.utcnow()
-        )
+        embed = discord.Embed(title="Confession Rules", description=rules, color=discord.Color.blue(), timestamp=discord.utils.utcnow())
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
     @confession.command(name="lock", description="Lock the confession system.")
@@ -157,9 +148,7 @@ class ConfessionCommands(commands.Cog):
         if self.locked:
             return
 
-        await message.channel.send(
-            f"{message.author.mention}, please use the {COMMAND} command to make anonymous confessions.", delete_after=10
-        )
+        await message.channel.send(f"{message.author.mention}, please use the {COMMAND} command to make anonymous confessions.", delete_after=10)
 
 
 async def setup(bot: commands.Bot) -> None:

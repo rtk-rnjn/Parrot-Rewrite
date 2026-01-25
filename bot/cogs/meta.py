@@ -35,9 +35,7 @@ class Meta(commands.Cog):
         self,
         ctx: Context[Parrot],
         *,
-        member: discord.Member | None = commands.parameter(
-            default=lambda ctx: ctx.author, description="The member to get the avatar of."
-        ),
+        member: discord.Member | None = commands.parameter(default=lambda ctx: ctx.author, description="The member to get the avatar of."),
     ) -> None:
         """Get the avatar of a user."""
         member = member or ctx.author
@@ -67,9 +65,7 @@ class Meta(commands.Cog):
         self,
         ctx: Context[Parrot],
         *,
-        member: discord.Member = commands.parameter(
-            default=commands.parameters.Author, description="The member whose info you want to see."
-        ),
+        member: discord.Member = commands.parameter(default=commands.parameters.Author, description="The member whose info you want to see."),
     ):
         """Get the basic stats about the user."""
         target = member or ctx.author
@@ -141,11 +137,7 @@ class Meta(commands.Cog):
             ),
             (
                 "Total channels",
-                (
-                    f"Categories: {len(ctx.guild.categories)}\n"
-                    f"Text: {len(ctx.guild.text_channels)}\n"
-                    f"Voice:{len(ctx.guild.voice_channels)}"
-                ),
+                (f"Categories: {len(ctx.guild.categories)}\n" f"Text: {len(ctx.guild.text_channels)}\n" f"Voice:{len(ctx.guild.voice_channels)}"),
                 True,
             ),
             (
@@ -155,12 +147,7 @@ class Meta(commands.Cog):
             ),
             (
                 "Statuses",
-                (
-                    f":green_circle: {statuses[0]}\n"
-                    f":yellow_circle: {statuses[1]}\n"
-                    f":red_circle: {statuses[2]}\n"
-                    f":black_circle: {statuses[3]} [Blame Discord]"
-                ),
+                (f":green_circle: {statuses[0]}\n" f":yellow_circle: {statuses[1]}\n" f":red_circle: {statuses[2]}\n" f":black_circle: {statuses[3]} [Blame Discord]"),
                 True,
             ),
         ]

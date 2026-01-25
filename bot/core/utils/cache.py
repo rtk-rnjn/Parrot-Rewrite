@@ -20,16 +20,18 @@ CACHE_DB = 5
 class CacheProtocol(Protocol[ReturnType_co]):
     redis: Redis
 
-    async def __call__(*args: Any, **kwargs: Any) -> ReturnType_co: ...
-    async def invalidate(*args: Any, **kwargs: Any) -> None: ...
+    async def __call__(*args: Any, **kwargs: Any) -> ReturnType_co:
+        ...
+
+    async def invalidate(*args: Any, **kwargs: Any) -> None:
+        ...
 
     @property
-    def __name__(self) -> str: ...
+    def __name__(self) -> str:
+        ...
 
 
-def async_method_cache(
-    *, expire: int | None = None, ignore_kwargs: bool = True
-) -> Callable[[Callable[P, Coroutine[Any, Any, ReturnType_co]]], CacheProtocol[ReturnType_co]]:
+def async_method_cache(*, expire: int | None = None, ignore_kwargs: bool = True) -> Callable[[Callable[P, Coroutine[Any, Any, ReturnType_co]]], CacheProtocol[ReturnType_co]]:
     def decorator(func: Callable[P, Coroutine[Any, Any, ReturnType_co]]) -> CacheProtocol[ReturnType_co]:
         redis = Redis(db=CACHE_DB, decode_responses=False, protocol=3)
 
@@ -48,17 +50,13 @@ def async_method_cache(
 
             key = make_key(args[1:], kwargs)
 
-            logger.debug(
-                "Checking cache for func=`%s` args=%s kwargs=%s", func.__name__, args[1:], kwargs if not ignore_kwargs else {}
-            )
+            logger.debug("Checking cache for func=`%s` args=%s kwargs=%s", func.__name__, args[1:], kwargs if not ignore_kwargs else {})
 
             if fetch_cache:
                 data = await maybe_coroutine(redis.get, key)
                 if isinstance(data, bytes):
                     result = pickle.loads(data)
-                    logger.debug(
-                        "Cache hit for func=`%s` args=%s kwargs=%s", func.__name__, args[1:], kwargs if not ignore_kwargs else {}
-                    )
+                    logger.debug("Cache hit for func=`%s` args=%s kwargs=%s", func.__name__, args[1:], kwargs if not ignore_kwargs else {})
                     return result
             else:
                 logger.warning(
