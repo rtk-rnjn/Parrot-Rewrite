@@ -46,9 +46,7 @@ class IndiaUnfilteredAuditLogEvents(commands.Cog):
 
         user = entry.user
         embed = discord.Embed(color=discord.Color.blue(), timestamp=entry.created_at)
-        embed.set_author(
-            name=f"Audit Log: {entry.action.name.replace('_', ' ').title()}", icon_url=user.display_avatar.url if user else None
-        )
+        embed.set_author(name=f"Audit Log: {entry.action.name.replace('_', ' ').title()}", icon_url=user.display_avatar.url if user else None)
         if hasattr(entry.target, "mention"):
             embed.add_field(name="Target", value=f"{entry.target.mention} (ID: `{getattr(entry.target, 'id', None)}`)", inline=False)  # type: ignore
         embed.add_field(name="Moderator", value=f"{user} (ID: `{entry.user_id}`)", inline=False)

@@ -45,12 +45,12 @@ class BannedMember(commands.Converter):
             try:
                 return await ctx.guild.fetch_ban(discord.Object(id=member_id))
             except discord.NotFound:
-                raise commands.BadArgument('This member has not been banned before.') from None
+                raise commands.BadArgument("This member has not been banned before.") from None
 
         entity = await discord.utils.find(lambda u: str(u.user) == argument, ctx.guild.bans(limit=None))
 
         if entity is None:
-            raise commands.BadArgument('This member has not been banned before.')
+            raise commands.BadArgument("This member has not been banned before.")
         return entity
 
 
@@ -73,7 +73,6 @@ class TimeZone(NamedTuple):
 
     @classmethod
     async def convert(cls, ctx: Context[Parrot], argument: str):
-
         # Prioritise aliases because they handle short codes slightly better
         tzs = ctx.bot._timezone_aliases  # pyright: ignore[reportPrivateUsage] # pylint: disable=protected-access
         if argument in tzs:

@@ -203,7 +203,6 @@ class Parrot(commands.Bot):  # pylint: disable=too-many-public-methods
 
     @property
     def http_session(self) -> aiohttp.ClientSession:
-
         return self.http._HTTPClient__session  # type: ignore  # pylint: disable=protected-access
 
     async def on_ready(self):
@@ -214,9 +213,7 @@ class Parrot(commands.Bot):  # pylint: disable=too-many-public-methods
 
         if not self.ON_READY_EVENT_FIRED:
             if self.default_lavalink_node is None:
-                node = await self.lavalink_node_pool.create_node(
-                    bot=self, host="localhost", port=2333, password="youshallnotpass", identifier="MAIN"
-                )
+                node = await self.lavalink_node_pool.create_node(bot=self, host="localhost", port=2333, password="youshallnotpass", identifier="MAIN")
 
                 self.default_lavalink_node = node
 
@@ -272,11 +269,7 @@ class Parrot(commands.Bot):  # pylint: disable=too-many-public-methods
         if message.guild is None or message.author.bot:
             return
 
-        if (
-            self.user
-            and re.fullmatch(rf"<@!?{self.user.id}>", message.content)
-            and message.channel.permissions_for(message.guild.me).send_messages
-        ):
+        if self.user and re.fullmatch(rf"<@!?{self.user.id}>", message.content) and message.channel.permissions_for(message.guild.me).send_messages:
             _ = await message.channel.send(f"Prefix: `{await self.get_guild_prefix(message.guild)}`", reference=message)
 
         await self.process_commands(message)
@@ -367,12 +360,7 @@ class Parrot(commands.Bot):  # pylint: disable=too-many-public-methods
 
     async def delete_timer(self, timer: TimerConfig):
         delete_result = await self.timer_collection.delete_one({"_id": timer.get("_id")})
-        if (
-            delete_result.deleted_count > 0
-            and self._current_timer is not None
-            and timer.get("_id") == self._current_timer.get("_id")
-            and self.timer_task is not None
-        ):
+        if delete_result.deleted_count > 0 and self._current_timer is not None and timer.get("_id") == self._current_timer.get("_id") and self.timer_task is not None:
             _ = self.timer_task.cancel()
             self.timer_task = self.loop.create_task(self.dispatch_timer())
 
@@ -393,9 +381,7 @@ class Parrot(commands.Bot):  # pylint: disable=too-many-public-methods
 
     async def create_timer(self, /, *, event_name: str, due_date: datetime.datetime, metadata: dict[str, Any]):
         now = arrow.utcnow().datetime
-        timer = TimerConfig(
-            event_name=event_name, due_date=due_date, metadata=metadata, created_at=now, counter=await self.__get_next_timer_sequence()
-        )
+        timer = TimerConfig(event_name=event_name, due_date=due_date, metadata=metadata, created_at=now, counter=await self.__get_next_timer_sequence())
         delta = (due_date - now).total_seconds()
         if delta <= 60:
             # Short Dispatch
@@ -432,15 +418,11 @@ class Parrot(commands.Bot):  # pylint: disable=too-many-public-methods
             if resp.status != 200:
                 return
 
-            parser: Any = (
-                etree.XMLParser(  # pyright: ignore[reportUnknownVariableType, reportUnknownMemberType] # pylint: disable=c-extension-no-member
-                    ns_clean=True, recover=True, encoding="utf-8"
-                )
+            parser: Any = etree.XMLParser(  # pyright: ignore[reportUnknownVariableType, reportUnknownMemberType] # pylint: disable=c-extension-no-member
+                ns_clean=True, recover=True, encoding="utf-8"
             )
-            tree: Any = (
-                etree.fromstring(  # pyright: ignore[reportUnknownVariableType, reportUnknownMemberType] # pylint: disable=c-extension-no-member
-                    await resp.read(), parser=parser
-                )
+            tree: Any = etree.fromstring(  # pyright: ignore[reportUnknownVariableType, reportUnknownMemberType] # pylint: disable=c-extension-no-member
+                await resp.read(), parser=parser
             )
 
             entries: dict[str, CLDRDataEntry] = {

@@ -14,9 +14,7 @@ class AuditFlag(commands.FlagConverter, case_insensitive=True, prefix="--", deli
     action: str | None = commands.flag(description="The type of action to filter by.", max_args=1)
     before: time.ShortTime | None = commands.flag(description="Show entries before this time.", max_args=1)
     after: time.ShortTime | None = commands.flag(description="Show entries after this time.", max_args=1)
-    oldest_first: Annotated[bool | None, convert_bool] = commands.flag(
-        description="Whether to show the oldest entries first.", default=None, max_args=1
-    )
+    oldest_first: Annotated[bool | None, convert_bool] = commands.flag(description="Whether to show the oldest entries first.", default=None, max_args=1)
     user: discord.User | discord.Member | None = commands.flag(description="The user to filter by.", max_args=1)
 
 
@@ -33,6 +31,4 @@ class PurgeFlags(commands.FlagConverter, case_insensitive=True, prefix="--", del
     files: bool = commands.flag(description="Remove messages that have attachments", default=False)
     emoji: bool = commands.flag(description="Remove messages that have custom emoji", default=False)
     reactions: bool = commands.flag(description="Remove messages that have reactions", default=False)
-    require: Literal["any", "all"] = commands.flag(
-        description='Whether any or all of the flags should be met before deleting messages. Defaults to "all"', default="all"
-    )
+    require: Literal["any", "all"] = commands.flag(description='Whether any or all of the flags should be met before deleting messages. Defaults to "all"', default="all")

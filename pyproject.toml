@@ -1,6 +1,6 @@
 [tool.black]
 line-length = 175
-target-version = ['py313']
+target-version = ['py312']
 skip-magic-trailing-comma = true
 skip-string-normalization = true
 
@@ -10,4 +10,4 @@ line_length = 175
 
 [tool.ruff]
 line-length = 175
-target-version = "py313"
+target-version = "py312"

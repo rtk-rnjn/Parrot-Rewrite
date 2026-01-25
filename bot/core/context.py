@@ -122,9 +122,7 @@ class Context(commands.Context[BotT]):
         await view.wait()
         return view.selected
 
-    async def channel_connect(
-        self, *, timeout: float = 30, reconnect: bool = True, cls: T | None = None, self_deaf: bool = True, self_mute: bool = False
-    ) -> Player | T:
+    async def channel_connect(self, *, timeout: float = 30, reconnect: bool = True, cls: T | None = None, self_deaf: bool = True, self_mute: bool = False) -> Player | T:
         if self.author.voice is None or self.author.voice.channel is None:
             raise commands.CommandError("You are not connected to a voice channel.")
 
