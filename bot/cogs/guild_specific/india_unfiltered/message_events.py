@@ -64,7 +64,12 @@ class IndiaUnfilteredMessageEvents(commands.Cog):
         display_name = member.display_name
         moderated_name = "Moderated Nickname"
 
-        if not ASCII_ONLY_REGEX.match(display_name) and display_name != moderated_name and member.guild.me.guild_permissions.manage_nicknames:
+        if (
+            not ASCII_ONLY_REGEX.match(display_name)
+            and display_name != moderated_name
+            and member.guild.me.guild_permissions.manage_nicknames
+            and member.top_role < member.guild.me.top_role
+        ):
             try:
                 await member.edit(nick=moderated_name, reason="Non-ASCII characters in nickname")
                 await message.channel.send(
