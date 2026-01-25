@@ -234,7 +234,7 @@ class Fun(commands.Cog, ColorHandler):
         accuracy = rf_ratio(msg.content, random_line)
         wpm = round(len(fakecontent.split(" ")) / (fin - ini) * 60, 2)
 
-        await ctx.send(f"{ctx.author.mention} your accuracy is `{accuracy}`%. " f"You typed in `{round(fin - ini, 2)}` seconds. " f"Words per minute: `{wpm}`")
+        await ctx.send(f"{ctx.author.mention} your accuracy is `{accuracy}`%. You typed in `{round(fin - ini, 2)}` seconds. Words per minute: `{wpm}`")
 
     @commands.command(name="reactiontest")
     @commands.bot_has_permissions(embed_links=True, add_reactions=True)
@@ -366,12 +366,12 @@ class Fun(commands.Cog, ColorHandler):
         dot_rotator = itertools.cycle([".", "..", "..."])
 
         ls = [
-            f"{Fore.WHITE}[{Fore.GREEN}{D(i)}{Fore.WHITE}] {Fore.YELLOW}{next(rotator)} " f"{Fore.BLUE}{virus}-virus.exe Packing files{next(dot_rotator)}"
+            f"{Fore.WHITE}[{Fore.GREEN}{D(i)}{Fore.WHITE}] {Fore.YELLOW}{next(rotator)} {Fore.BLUE}{virus}-virus.exe Packing files{next(dot_rotator)}"
             for i in range(3, SHIFTER, 3)
         ]
-        ls.append(f"{Fore.WHITE}[{Fore.GREEN}{'Successfully downloaded':<24}{Fore.WHITE}] " f"{Fore.YELLOW}{next(rotator)} {Fore.BLUE}{virus}-virus.exe")
+        ls.append(f"{Fore.WHITE}[{Fore.GREEN}{'Successfully downloaded':<24}{Fore.WHITE}] {Fore.YELLOW}{next(rotator)} {Fore.BLUE}{virus}-virus.exe")
         for _ in range(3):
-            ls.append(f"{Fore.WHITE}[{Fore.RED}{f'Injecting virus{next(dot_rotator)}':<24}{Fore.WHITE}] " f"{Fore.YELLOW}{next(rotator)} {Fore.BLUE}{virus}-virus.exe")
+            ls.append(f"{Fore.WHITE}[{Fore.RED}{f'Injecting virus{next(dot_rotator)}':<24}{Fore.WHITE}] {Fore.YELLOW}{next(rotator)} {Fore.BLUE}{virus}-virus.exe")
         ls.append(f"{Fore.GREEN}Successfully {Fore.WHITE}Injected {Fore.RED}{virus}-virus.exe into {Fore.YELLOW}{user.name}")
         for i in ls:
             await m.edit(content=f"{PREFIX}{i}{SUFFIX}")
@@ -501,9 +501,7 @@ class Fun(commands.Cog, ColorHandler):
     ) -> None:
         """Create an embed from an HSV input."""
         if (hue not in range(361)) or any(c not in range(101) for c in (saturation, value)):
-            raise commands.BadArgument(
-                message="Hue can only be from 0 to 360. Saturation and Value can only be from 0 to 100. " f"User input was: `{hue, saturation, value}`."
-            )
+            raise commands.BadArgument(message=f"Hue can only be from 0 to 360. Saturation and Value can only be from 0 to 100. User input was: `{hue, saturation, value}`.")
         hsv_tuple = cast(tuple[int, int, int], ImageColor.getrgb(f"hsv({hue}, {saturation}%, {value}%)"))
         await self.send_colour_response(ctx, hsv_tuple)
 
@@ -518,7 +516,7 @@ class Fun(commands.Cog, ColorHandler):
         """Create an embed from an HSL input."""
         if (hue not in range(361)) or any(c not in range(101) for c in (saturation, lightness)):
             raise commands.BadArgument(
-                message="Hue can only be from 0 to 360. Saturation and Lightness can only be from 0 to 100. " f"User input was: `{hue, saturation, lightness}`."
+                message=f"Hue can only be from 0 to 360. Saturation and Lightness can only be from 0 to 100. User input was: `{hue, saturation, lightness}`."
             )
         hsl_tuple = cast(tuple[int, int, int], ImageColor.getrgb(f"hsl({hue}, {saturation}%, {lightness}%)"))
         await self.send_colour_response(ctx, hsl_tuple)
@@ -548,7 +546,7 @@ class Fun(commands.Cog, ColorHandler):
 
         if len(hex_code) not in (4, 5, 7, 9) or any(digit not in string.hexdigits for digit in hex_code[1:]):
             raise commands.BadArgument(
-                message=f"Cannot convert `{hex_code}` to a recognizable Hex format. " "Hex values must be hexadecimal and take the form *#RRGGBB* or *#RGB*."
+                message=f"Cannot convert `{hex_code}` to a recognizable Hex format. Hex values must be hexadecimal and take the form *#RRGGBB* or *#RGB*."
             )
 
         hex_tuple = ImageColor.getrgb(hex_code)

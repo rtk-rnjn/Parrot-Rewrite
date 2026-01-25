@@ -158,7 +158,7 @@ class Love(commands.Cog):
             emoji2 = random.choice(HEART_EMOJIS)
             embed.title = "Zodiac Compatibility"
             embed.description = (
-                f"{zodiac_sign.capitalize()}{emoji1}{compatible_zodiac['Zodiac']}\n" f"{emoji2}Compatibility meter : {compatible_zodiac['compatibility_score']}{emoji2}"
+                f"{zodiac_sign.capitalize()}{emoji1}{compatible_zodiac['Zodiac']}\n{emoji2}Compatibility meter : {compatible_zodiac['compatibility_score']}{emoji2}"
             )
             embed.add_field(name=f"A letter from Dr.Zodiac {LETTER_EMOJI}", value=compatible_zodiac["description"])
         else:
@@ -214,7 +214,7 @@ class Love(commands.Cog):
             embed_text = f"You have another match, this being {matches[0]}."
         else:
             embed_title = "You have a true match!"
-            embed_text = "This state is your true Valenstate! There are no states that would suit" " you better"
+            embed_text = "This state is your true Valenstate! There are no states that would suit you better"
 
         embed = discord.Embed(
             title=f"Your Valenstate is {valenstate} \u2764",

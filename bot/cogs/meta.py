@@ -137,17 +137,17 @@ class Meta(commands.Cog):
             ),
             (
                 "Total channels",
-                (f"Categories: {len(ctx.guild.categories)}\n" f"Text: {len(ctx.guild.text_channels)}\n" f"Voice:{len(ctx.guild.voice_channels)}"),
+                (f"Categories: {len(ctx.guild.categories)}\nText: {len(ctx.guild.text_channels)}\nVoice:{len(ctx.guild.voice_channels)}"),
                 True,
             ),
             (
                 "General",
-                (f"Roles: {len(ctx.guild.roles)}\n" f"Emojis: {len(ctx.guild.emojis)}\n" f"Boost Level: {ctx.guild.premium_tier}"),
+                (f"Roles: {len(ctx.guild.roles)}\nEmojis: {len(ctx.guild.emojis)}\nBoost Level: {ctx.guild.premium_tier}"),
                 True,
             ),
             (
                 "Statuses",
-                (f":green_circle: {statuses[0]}\n" f":yellow_circle: {statuses[1]}\n" f":red_circle: {statuses[2]}\n" f":black_circle: {statuses[3]} [Blame Discord]"),
+                (f":green_circle: {statuses[0]}\n:yellow_circle: {statuses[1]}\n:red_circle: {statuses[2]}\n:black_circle: {statuses[3]} [Blame Discord]"),
                 True,
             ),
         ]
@@ -194,11 +194,11 @@ class Meta(commands.Cog):
                 emoji_stats["regular"] += 1
                 emoji_stats["disabled"] += not emoji.available
 
-        fmt = f'Regular: {emoji_stats["regular"]}/{guild.emoji_limit}\n' f'Animated: {emoji_stats["animated"]}/{guild.emoji_limit}\n'
+        fmt = f"Regular: {emoji_stats['regular']}/{guild.emoji_limit}\nAnimated: {emoji_stats['animated']}/{guild.emoji_limit}\n"
         if emoji_stats["disabled"] or emoji_stats["animated_disabled"]:
-            fmt = f'{fmt}Disabled: {emoji_stats["disabled"]} regular, {emoji_stats["animated_disabled"]} animated\n'
+            fmt = f"{fmt}Disabled: {emoji_stats['disabled']} regular, {emoji_stats['animated_disabled']} animated\n"
 
-        fmt = f"{fmt}Total Emoji: {len(guild.emojis)}/{guild.emoji_limit*2}"
+        fmt = f"{fmt}Total Emoji: {len(guild.emojis)}/{guild.emoji_limit * 2}"
         embed.add_field(name="Emoji", value=fmt, inline=True)
 
         if ctx.guild.me.guild_permissions.ban_members:

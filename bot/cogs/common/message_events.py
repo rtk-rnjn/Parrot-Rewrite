@@ -123,10 +123,10 @@ class Miscellaneous(commands.Cog, SnipeMessageListeners):
         description = inspect.cleandoc(
             f"""
             **Old Message:**
-            {data['old_content']}
+            {data["old_content"]}
 
             **New Message:**
-            {data['content']}
+            {data["content"]}
             """
         )
 

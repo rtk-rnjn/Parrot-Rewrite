@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import random
+import re
 from typing import cast
 
 import discord
@@ -10,6 +11,8 @@ from bot.core import Parrot
 
 SERVER_ID = 776415524056727582
 MESSAGE_DELETE_LOGS = 1454775028045316343
+
+ASCII_ONLY_REGEX = re.compile(r"^[\x00-\x7F]+$")
 
 
 class IndiaUnfilteredMessageEvents(commands.Cog):
@@ -48,6 +51,28 @@ class IndiaUnfilteredMessageEvents(commands.Cog):
             content=f"{message.author} [{message.author.mention}] (`{message.author.id}`) **|** {message.channel} (`{message.channel.id}`)",
             embed=embed,
         )
+
+    @commands.Cog.listener(name="on_message")
+    async def check_nickname(self, message: discord.Message) -> None:
+        if message.guild is None or message.guild.id != SERVER_ID:
+            return
+
+        member = message.guild.get_member(message.author.id)
+        if member is None:
+            return
+
+        display_name = member.display_name
+        moderated_name = "Moderated Nickname"
+
+        if not ASCII_ONLY_REGEX.match(display_name) and display_name != moderated_name and member.guild.me.guild_permissions.manage_nicknames:
+            try:
+                await member.edit(nick=moderated_name, reason="Non-ASCII characters in nickname")
+                await message.channel.send(
+                    f"{member.mention}, your nickname has been changed to '`{moderated_name}`' because it contained non-ASCII characters. "
+                    "Please choose a nickname with only standard English characters."
+                )
+            except discord.HTTPException:
+                pass  # Failed to change nickname for some other reason
 
 
 async def setup(bot: Parrot) -> None:

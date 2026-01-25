@@ -49,7 +49,7 @@ class IndiaUnfilteredAuditLogEvents(commands.Cog):
         embed.set_author(name=f"Audit Log: {entry.action.name.replace('_', ' ').title()}", icon_url=user.display_avatar.url if user else None)
         if hasattr(entry.target, "mention"):
             embed.add_field(name="Target", value=f"{entry.target.mention} (ID: `{getattr(entry.target, 'id', None)}`)", inline=False)  # type: ignore
-        embed.add_field(name="Moderator", value=f"{user} (ID: `{entry.user_id}`)", inline=False)
+        embed.add_field(name="Moderator", value=f"{user or 'N/A'} (ID: `{entry.user_id}`)", inline=False)
         if entry.reason:
             embed.add_field(name="Reason", value=entry.reason, inline=False)
 

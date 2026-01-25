@@ -829,7 +829,7 @@ class Moderation(commands.Cog):
 
         spammers = await strategy(ctx, search)
         deleted = sum(spammers.values())
-        messages = [f'{deleted} message{" was" if deleted == 1 else "s were"} removed.']
+        messages = [f"{deleted} message{' was' if deleted == 1 else 's were'} removed."]
         if deleted:
             messages.append("")
             spammers = sorted(spammers.items(), key=lambda t: t[1], reverse=True)

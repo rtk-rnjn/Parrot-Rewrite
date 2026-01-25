@@ -116,7 +116,7 @@ class Music(commands.Cog):
         current_length = player.position
 
         await ctx.reply(
-            f"**Now Playing:** [{title}](<{url}>) by {author}\n" f"{self.__create_duration_string(total_duration=duration, current_duration=current_length)}",
+            f"**Now Playing:** [{title}](<{url}>) by {author}\n{self.__create_duration_string(total_duration=duration, current_duration=current_length)}",
             suppress_embeds=True,
         )
 

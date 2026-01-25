@@ -84,7 +84,7 @@ class LinkToCodeblock(commands.Cog, command_attrs={"hidden": True}):
     async def _fetch_github_gist_snippet(self, gist_id: str, revision: str, file_path: str, start_line: str | int | None, end_line: str | int | None) -> str:
         """Fetches a snippet from a GitHub gist."""
         gist_json: dict | None = await self._fetch_response(
-            f'https://api.github.com/gists/{gist_id}{f"/{revision}" if revision != "" else ""}', "json", headers=GITHUB_HEADERS
+            f"https://api.github.com/gists/{gist_id}{f'/{revision}' if revision != '' else ''}", "json", headers=GITHUB_HEADERS
         )
 
         if gist_json is None:
