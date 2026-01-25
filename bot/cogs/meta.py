@@ -225,6 +225,53 @@ class Meta(commands.Cog):
 
         await ctx.send("go")
 
+    @commands.command(name="roleinfo", aliases=["ri"])
+    async def roleinfo(self, ctx: Context, *, role: discord.Role = commands.parameter(description="The role to get info about.")):
+        """To get the info regarding the server role."""
+        embed = discord.Embed(
+            title=f"Role Information: {role.name}",
+            description=f"ID: `{role.id}`",
+            color=role.color,
+            timestamp=discord.utils.utcnow(),
+        )
+        data = [
+            ("Created At", f"{discord.utils.format_dt(role.created_at)}", True),
+            ("Is Hoisted?", role.hoist, True),
+            ("Position", role.position, True),
+            ("Managed", role.managed, True),
+            ("Mentionalble?", role.mentionable, True),
+            ("Members", len(role.members), True),
+            ("Mention", role.mention, True),
+            ("Is Boost role?", role.is_premium_subscriber(), True),
+            ("Is Bot role?", role.is_bot_managed(), True),
+        ]
+        for name, value, inline in data:
+            embed.add_field(name=name, value=value, inline=inline)
+        perms = []
+        if role.permissions.administrator:
+            perms.append("Administrator")
+        if role.permissions.kick_members and role.permissions.ban_members and role.permissions.manage_messages:
+            perms.append("Server Moderator")
+        if role.permissions.manage_guild:
+            perms.append("Server Manager")
+        if role.permissions.manage_roles:
+            perms.append("Role Manager")
+        if role.permissions.moderate_members:
+            perms.append("Can Timeout Members")
+        if role.permissions.manage_channels:
+            perms.append("Channel Manager")
+        if role.permissions.manage_emojis:
+            perms.append("Emoji Manager")
+        embed.description = f"Key perms: {', '.join(perms or ['N/A'])}"
+        embed.set_footer(text=f"ID: {role.id}")
+        if role.unicode_emoji:
+            embed.set_thumbnail(
+                url=f"https://raw.githubusercontent.com/iamcal/emoji-data/master/img-twitter-72/{ord(list(role.unicode_emoji)[0]):x}.png",
+            )
+        if role.icon:
+            embed.set_thumbnail(url=role.icon.url)
+        await ctx.reply(embed=embed)
+
 
 async def setup(bot: Parrot) -> None:
     """Setup the Meta cog."""
