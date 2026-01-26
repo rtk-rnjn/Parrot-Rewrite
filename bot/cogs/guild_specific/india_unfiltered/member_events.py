@@ -13,6 +13,7 @@ JOIN_LOGS = 1454746090824925257
 LEAVE_LOGS = 1454752253440430245
 
 GENERAL_CHAT_ID = 779410999857905705
+AUTO_ROLE_ID = 907253155950112768
 
 
 class IndiaUnfilteredMemberEvents(commands.Cog):
@@ -50,6 +51,15 @@ class IndiaUnfilteredMemberEvents(commands.Cog):
         """Get the general chat text channel."""
         return cast(discord.TextChannel, self.bot.get_channel(GENERAL_CHAT_ID))
 
+    @property
+    def auto_role(self) -> discord.Role | None:
+        """Get the auto role."""
+        guild = self.bot.get_guild(SERVER_ID)
+        if guild is None:
+            return None
+
+        return guild.get_role(AUTO_ROLE_ID)
+
     @commands.Cog.listener(name="on_member_join")
     async def log_member_join(self, member: discord.Member) -> None:
         """Logs when a member joins the server."""
@@ -69,10 +79,13 @@ class IndiaUnfilteredMemberEvents(commands.Cog):
             return
 
         content = f"Welcome {member.mention} to {member.guild.name}!"
-        if random.random() < 0.2:
+        if random.random() < 0.6:
             content += f"\n-# {self.random_string()}"
 
         await self.general_chat_channel.send(content)
+        auto_role = self.auto_role
+        if auto_role is not None and not member.bot and auto_role not in member.roles:
+            await member.add_roles(auto_role, reason="Auto role for joining the server.")
 
     @commands.Cog.listener(name="on_member_remove")
     async def log_member_remove(self, member: discord.Member) -> None:

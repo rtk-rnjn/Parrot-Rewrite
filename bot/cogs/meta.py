@@ -140,11 +140,7 @@ class Meta(commands.Cog):
                 (f"Categories: {len(ctx.guild.categories)}\nText: {len(ctx.guild.text_channels)}\nVoice:{len(ctx.guild.voice_channels)}"),
                 True,
             ),
-            (
-                "General",
-                (f"Roles: {len(ctx.guild.roles)}\nEmojis: {len(ctx.guild.emojis)}\nBoost Level: {ctx.guild.premium_tier}"),
-                True,
-            ),
+            ("General", (f"Roles: {len(ctx.guild.roles)}\nEmojis: {len(ctx.guild.emojis)}\nBoost Level: {ctx.guild.premium_tier}"), True),
             (
                 "Statuses",
                 (f":green_circle: {statuses[0]}\n:yellow_circle: {statuses[1]}\n:red_circle: {statuses[2]}\n:black_circle: {statuses[3]} [Blame Discord]"),
@@ -228,12 +224,7 @@ class Meta(commands.Cog):
     @commands.command(name="roleinfo", aliases=["ri"])
     async def roleinfo(self, ctx: Context, *, role: discord.Role = commands.parameter(description="The role to get info about.")):
         """To get the info regarding the server role."""
-        embed = discord.Embed(
-            title=f"Role Information: {role.name}",
-            description=f"ID: `{role.id}`",
-            color=role.color,
-            timestamp=discord.utils.utcnow(),
-        )
+        embed = discord.Embed(title=f"Role Information: {role.name}", description=f"ID: `{role.id}`", color=role.color, timestamp=discord.utils.utcnow())
         data = [
             ("Created At", f"{discord.utils.format_dt(role.created_at)}", True),
             ("Is Hoisted?", role.hoist, True),
@@ -265,9 +256,7 @@ class Meta(commands.Cog):
         embed.description = f"Key perms: {', '.join(perms or ['N/A'])}"
         embed.set_footer(text=f"ID: {role.id}")
         if role.unicode_emoji:
-            embed.set_thumbnail(
-                url=f"https://raw.githubusercontent.com/iamcal/emoji-data/master/img-twitter-72/{ord(list(role.unicode_emoji)[0]):x}.png",
-            )
+            embed.set_thumbnail(url=f"https://raw.githubusercontent.com/iamcal/emoji-data/master/img-twitter-72/{ord(list(role.unicode_emoji)[0]):x}.png")
         if role.icon:
             embed.set_thumbnail(url=role.icon.url)
         await ctx.reply(embed=embed)
