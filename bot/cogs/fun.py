@@ -8,7 +8,7 @@ import math
 import random
 import string
 import time
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Annotated, Any, cast
 
 import discord
 from colorama import Fore
@@ -23,6 +23,51 @@ if TYPE_CHECKING:
     from bot.core import Context, Parrot
 
 THUMBNAIL_SIZE = (80, 80)
+SECTION_SEPERATOR = "\N{WHITE RIGHT POINTING BACKHAND INDEX}\N{WHITE LEFT POINTING BACKHAND INDEX}"
+
+# fmt: off
+CHARACTER_VALUES = {
+    200: "\N{PEOPLE HUGGING}",
+    50 : "\N{SPARKLING HEART}",
+    10 : "\N{SPARKLES}",
+    5  : "\N{FACE WITH PLEADING EYES}",
+    1  : ",",
+    0  : "\N{HEAVY BLACK HEART}",
+}
+# fmt: on
+
+
+def to_bottom(text: str) -> str:
+    out = bytearray()
+
+    for char in text.encode():
+        while char != 0:
+            for value, emoji in CHARACTER_VALUES.items():
+                if char >= value:
+                    char -= value
+                    out += emoji.encode()
+                    break
+
+        out += SECTION_SEPERATOR.encode()
+
+    return out.decode("utf-8")
+
+
+def from_bottom(text: str) -> str:
+    out = bytearray()
+    text = text.strip().removesuffix(SECTION_SEPERATOR)
+
+    if any(c not in CHARACTER_VALUES.values() for c in text.replace(SECTION_SEPERATOR, "")):
+        msg = f"Invalid bottom text: {text}"
+        raise TypeError(msg)
+
+    for char in text.split(SECTION_SEPERATOR):
+        rev_mapping = {v: k for k, v in CHARACTER_VALUES.items()}
+
+        sub = sum(rev_mapping[emoji] for emoji in char)
+        out += sub.to_bytes(1, "big")
+
+    return out.decode()
 
 
 class ColorHandler:
@@ -604,6 +649,24 @@ class Fun(commands.Cog, ColorHandler):
                 pages.append(result)
 
         return await ctx.paginate(pages=pages)
+
+    @commands.command(name="bottomify", aliases=["bottom"])
+    async def _bottomify(self, ctx: Context, *, text: Annotated[str, commands.clean_content]):
+        """Bottomify your text."""
+        text = to_bottom(text)
+        if len(text) > 2000:
+            await ctx.reply(text[:2000])
+        else:
+            await ctx.reply(text)
+
+    @commands.command(name="debottomify", aliases=["debottom"])
+    async def _debottomify(self, ctx: Context, *, text: Annotated[str, commands.clean_content]):
+        """Debottomify your text."""
+        text = from_bottom(text)
+        if len(text) > 2000:
+            await ctx.reply(text[:2000])
+        else:
+            await ctx.reply(text)
 
 
 async def setup(bot: Parrot) -> None:

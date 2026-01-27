@@ -13,7 +13,8 @@ from discord.ext import commands
 from bot.core import Parrot
 
 GITHUB_RE = re.compile(
-    r"https://github\.com/(?P<repo>[a-zA-Z0-9-]+/[\w.-]+)/blob/" r"(?P<path>[^#>]+)(\?[^#>]+)?(#L(?P<start_line>\d+)(([-~:]|(\.\.))L(?P<end_line>\d+))?)",
+    r"https://github\.com/(?P<repo>[a-zA-Z0-9-]+/[\w.-]+)/blob/"
+    r"(?P<path>[^#>]+)(\?[^#>]+)?(#L(?P<start_line>\d+)(([-~:]|(\.\.))L(?P<end_line>\d+))?)",
     re.IGNORECASE,
 )
 
@@ -30,7 +31,8 @@ GITLAB_RE = re.compile(
 )
 
 BITBUCKET_RE = re.compile(
-    r"https://bitbucket\.org/(?P<repo>[a-zA-Z0-9-]+/[\w.-]+)/src/(?P<ref>[0-9a-zA-Z]+)" r"/(?P<file_path>[^#>]+)(\?[^#>]+)?(#lines-(?P<start_line>\d+)(:(?P<end_line>\d+))?)",
+    r"https://bitbucket\.org/(?P<repo>[a-zA-Z0-9-]+/[\w.-]+)/src/(?P<ref>[0-9a-zA-Z]+)"
+    r"/(?P<file_path>[^#>]+)(\?[^#>]+)?(#lines-(?P<start_line>\d+)(:(?P<end_line>\d+))?)",
     re.IGNORECASE,
 )
 

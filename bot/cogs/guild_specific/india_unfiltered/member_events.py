@@ -79,7 +79,7 @@ class IndiaUnfilteredMemberEvents(commands.Cog):
             return
 
         content = f"Welcome {member.mention} to {member.guild.name}!"
-        if random.random() < 0.6:
+        if random.random() < 0.8:
             content += f"\n-# {self.random_string()}"
 
         await self.general_chat_channel.send(content)
