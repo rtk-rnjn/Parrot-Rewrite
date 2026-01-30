@@ -2,15 +2,15 @@ from __future__ import annotations
 
 import random
 import re
-from typing import cast
-import arrow
 from datetime import time
+from typing import TYPE_CHECKING, cast
+
+import arrow
 import discord
-from typing import TYPE_CHECKING
 from discord.ext import commands, tasks
+from pytz import timezone
 
 from bot.core import Parrot
-
 
 SERVER_ID = 776415524056727582
 MESSAGE_DELETE_LOGS = 1454775028045316343
@@ -93,7 +93,7 @@ class IndiaUnfilteredMessageEvents(commands.Cog):
             except discord.HTTPException:
                 pass  # Failed to change nickname for some other reason
 
-    @tasks.loop(time=time(hour=12, minute=0, second=0))
+    @tasks.loop(time=time(hour=12, minute=0, second=0, tzinfo=timezone("Asia/Kolkata")))
     async def quote_of_the_day(self) -> None:
         if self.qotd_channel is None:
             return
