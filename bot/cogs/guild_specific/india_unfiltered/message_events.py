@@ -3,14 +3,18 @@ from __future__ import annotations
 import random
 import re
 from typing import cast
-
+import arrow
+from datetime import time
 import discord
-from discord.ext import commands
+from typing import TYPE_CHECKING
+from discord.ext import commands, tasks
 
 from bot.core import Parrot
 
+
 SERVER_ID = 776415524056727582
 MESSAGE_DELETE_LOGS = 1454775028045316343
+QOTD_CHANNEL_ID = 1466194436898685101
 
 ASCII_ONLY_REGEX = re.compile(r"^[\x00-\x7F]+$")
 
@@ -20,6 +24,7 @@ class IndiaUnfilteredMessageEvents(commands.Cog):
 
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
+        self.quote_of_the_day.start()
 
     def random_discord_fact(self) -> str:
         """Get a random Discord fact."""
@@ -29,6 +34,11 @@ class IndiaUnfilteredMessageEvents(commands.Cog):
     def message_delete_logs_channel(self) -> discord.TextChannel | None:
         """Get the message delete logs text channel."""
         return cast(discord.TextChannel, self.bot.get_channel(MESSAGE_DELETE_LOGS))
+
+    @property
+    def qotd_channel(self) -> discord.TextChannel | None:
+        """Get the QOTD text channel."""
+        return cast(discord.TextChannel, self.bot.get_channel(QOTD_CHANNEL_ID))
 
     @commands.Cog.listener(name="on_message_delete")
     async def log_message_delete(self, message: discord.Message) -> None:
@@ -82,6 +92,40 @@ class IndiaUnfilteredMessageEvents(commands.Cog):
                 )
             except discord.HTTPException:
                 pass  # Failed to change nickname for some other reason
+
+    @tasks.loop(time=time(hour=12, minute=0, second=0))
+    async def quote_of_the_day(self) -> None:
+        if self.qotd_channel is None:
+            return
+
+        await self.post_qotd()
+
+    async def post_qotd(self):
+        if TYPE_CHECKING:
+            assert self.qotd_channel is not None
+
+        counter: int = await self.bot.redis_client.incr("india_unfiltered:qotd:counter")
+
+        random_quotd = self.bot.assets.quotes_qotd[counter % len(self.bot.assets.quotes_qotd)]
+        quote_text = random_quotd["quote"]
+        quote_author = random_quotd["author"]
+
+        embed = discord.Embed(
+            title="Quote of the Day",
+            description=f'"{quote_text}"\n\n— **{quote_author}**',
+            color=discord.Color.blue(),
+            timestamp=arrow.utcnow().datetime,
+        )
+        message = f"**Quote of the Day #{counter}**"
+        discord_message = await self.qotd_channel.send(content=message, embed=embed)
+        return discord_message
+
+    @quote_of_the_day.before_loop
+    async def before_quote_of_the_day(self) -> None:
+        await self.bot.wait_until_ready()
+
+    async def cog_unload(self) -> None:
+        self.quote_of_the_day.cancel()
 
 
 async def setup(bot: Parrot) -> None:

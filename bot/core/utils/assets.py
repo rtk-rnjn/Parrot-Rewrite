@@ -64,6 +64,11 @@ class ZodiacExplanation(TypedDict):
     url: str
 
 
+class Quote(TypedDict):
+    quote: str
+    author: str
+
+
 class Paths(Enum):
     ASSETS = pathlib.Path("assets")
     VALENTINE = ASSETS / "valentine"
@@ -77,6 +82,7 @@ class Paths(Enum):
     PYTHON_TAGS = ASSETS / "python_tags"
     DISCORD_FACTS = ASSETS / "discord_facts.json"
     QUOTES = ASSETS / "quotes.txt"
+    QOTD = ASSETS / "quotes.json"
     NOUNS = ASSETS / "nouns.txt"
 
     DATE_IDEAS = VALENTINE / "date_ideas.json"
@@ -114,6 +120,7 @@ class Assets:
         self._zodiac_compatibility: dict[str, list[ZodicCompatibility]] = {}
         self._zodiac_explanation: dict[str, ZodiacExplanation] = {}
         self._nouns: list[str] = []
+        self._quotes_qotd: list[Quote] = []
 
         self.emoji = Emoji
 
@@ -280,3 +287,12 @@ class Assets:
         with open(Paths.NOUNS.value, "r", encoding="utf-8") as file:
             self._nouns = [line.strip() for line in file]
             return self._nouns
+
+    @property
+    def quotes_qotd(self) -> list[Quote]:
+        if self._quotes_qotd:
+            return self._quotes_qotd
+
+        with open(Paths.QOTD.value, "r", encoding="utf-8") as file:
+            self._quotes_qotd = json.load(file)
+            return self._quotes_qotd
