@@ -7,7 +7,7 @@ from collections import Counter
 import discord
 from discord.ext import commands
 
-from bot.core import Context, Parrot
+from bot.core import Context, DeleteView, Parrot
 
 
 class Meta(commands.Cog):
@@ -44,7 +44,10 @@ class Meta(commands.Cog):
         embed.set_footer(text=f"Requested by {ctx.author}", icon_url=ctx.author.display_avatar.url)
         embed.timestamp = discord.utils.utcnow()
 
-        await ctx.reply(embed=embed)
+        view = DeleteView(author=ctx.author, message_reference=ctx.message)
+
+        message = await ctx.reply(embed=embed, view=view)
+        view.message = message
 
     @commands.command(name="member_count", aliases=["member-count", "mc"])
     async def member_count(self, ctx: Context[Parrot]):

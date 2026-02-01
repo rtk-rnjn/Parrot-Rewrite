@@ -173,3 +173,42 @@ class DisambiguatorView(discord.ui.View, Generic[T]):
             await self.message.delete(delay=0)
 
         self.stop()
+
+
+class DeleteView(discord.ui.View):
+    message: discord.Message | None
+
+    def __init__(self, *, timeout: float | None = None, author: discord.Member | None = None, message_reference: discord.Message | None = None):
+        super().__init__(timeout=timeout)
+        self.author = author
+        self.message_reference = message_reference
+
+    async def interaction_check(self, interaction: discord.Interaction[Parrot]) -> bool:
+        if self.author and interaction.user.id != self.author.id:
+            await interaction.response.send_message("You cannot use this button.", ephemeral=True)
+            return False
+
+        return True
+
+    async def on_timeout(self) -> None:
+        for item in self.children:
+            if isinstance(item, discord.ui.Button):
+                item.disabled = True
+
+        if self.message:
+            try:
+                await self.message.edit(view=self)
+            except discord.NotFound:
+                pass
+
+    @discord.ui.button(label="Delete", style=discord.ButtonStyle.danger, emoji="\N{WASTEBASKET}")
+    async def delete_button(self, interaction: discord.Interaction[Parrot], button: discord.ui.Button):
+        await interaction.response.defer()
+        if self.message:
+            await self.message.delete(delay=0)
+        if self.message_reference:
+            try:
+                await self.message_reference.delete(delay=0)
+            except discord.NotFound:
+                pass
+        self.stop()
