@@ -148,7 +148,14 @@ class Leveling(commands.Cog):
     async def message(self, ctx: Context[Parrot], *, message: str):
         """Set the level up message. You can use the following placeholders: $user_name, $user_mention, $level, $xp."""
         await self.leveling_config.set_guild_level_up_message(guild=ctx.guild, message=message)
-        await ctx.reply("Level up message has been updated.")
+        template = Template(message)
+        preview = template.safe_substitute(
+            user_name=ctx.author.display_name,
+            user_mention=ctx.author.mention,
+            level=10,
+            xp=1500,
+        )
+        await ctx.reply(f"Level up message has been updated.\nPreview: {preview}")
 
 
 async def setup(bot: Parrot) -> None:
