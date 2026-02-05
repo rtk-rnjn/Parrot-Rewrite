@@ -161,6 +161,7 @@ class Parrot(commands.Bot):  # pylint: disable=too-many-public-methods
             allowed_mentions=discord.AllowedMentions(users=True, roles=True, replied_user=False, everyone=False),
             enable_debug_events=False,
             help_command=HelpCommand(),
+            assume_unsync_clock=False,
         )
 
         self._BotBase__cogs = commands.core._CaseInsensitiveDict()  # pyright: ignore[reportPrivateUsage]
