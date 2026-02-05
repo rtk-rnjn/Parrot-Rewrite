@@ -26,7 +26,7 @@ class Context(commands.Context[BotT]):
 
     guild: discord.Guild  # pyright: ignore[reportIncompatibleVariableOverride]
     author: discord.Member  # pyright: ignore[reportIncompatibleVariableOverride]
-    voice_client: Player | None
+    voice_client: Player | None  # pyright: ignore[reportIncompatibleMethodOverride, reportIncompatibleVariableOverride]
     me: discord.Member  # pyright: ignore[reportIncompatibleVariableOverride]
 
     @property
@@ -183,7 +183,7 @@ class DeleteView(discord.ui.View):
         self.author = author
         self.message_reference = message_reference
 
-    async def interaction_check(self, interaction: discord.Interaction[Parrot]) -> bool:
+    async def interaction_check(self, interaction: discord.Interaction[discord.Client], /) -> bool:
         if self.author and interaction.user.id != self.author.id:
             await interaction.response.send_message("You cannot use this button.", ephemeral=True)
             return False
@@ -195,7 +195,7 @@ class DeleteView(discord.ui.View):
             if isinstance(item, discord.ui.Button):
                 item.disabled = True
 
-        if self.message:
+        if isinstance(self.message, discord.Message):
             try:
                 await self.message.edit(view=self)
             except discord.NotFound:

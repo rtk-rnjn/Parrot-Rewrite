@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import random
 from io import BytesIO
-from typing import TYPE_CHECKING, TypedDict
+from typing import TYPE_CHECKING, Iterable, TypedDict
 
 import discord
 import requests
@@ -24,6 +24,86 @@ class Config(TypedDict):
     exponent: float
     level_up_channel: int
     level_up_message: str
+
+
+class _LBStyle:
+    WIDTH = 934
+    HEADER_HEIGHT = 90
+    ROW_HEIGHT = 90
+
+    BG_COLOR = "#2C2F33"
+    TEXT_COLOR = (255, 255, 255, 255)
+    ACCENT_COLOR = (255, 215, 0, 255)
+
+    AVATAR_SIZE = 64
+    AVATAR_X = 30
+    NAME_X = 180
+    RANK_X = 120
+    LEVEL_X = 620
+    XP_X = 760
+
+    FONT_PATH = "assets/fonts/Montserrat-Regular.ttf"
+
+
+class _LBFonts:
+    def __init__(self) -> None:
+        self.title = ImageFont.truetype(_LBStyle.FONT_PATH, 42)
+        self.row = ImageFont.truetype(_LBStyle.FONT_PATH, 26)
+        self.small = ImageFont.truetype(_LBStyle.FONT_PATH, 22)
+
+
+def _fetch_avatar(member: discord.Member | discord.User, size: int) -> Image.Image:
+    avatar_bytes = requests.get(member.display_avatar.url).content
+    avatar = Image.open(BytesIO(avatar_bytes)).convert("RGBA")
+    avatar = avatar.resize((size, size), Image.LANCZOS)  # type: ignore
+
+    mask = Image.new("L", (size, size), 0)
+    ImageDraw.Draw(mask).ellipse((0, 0, size, size), fill=255)
+    avatar.putalpha(mask)
+
+    return avatar
+
+
+def _draw_rank_bg(draw: ImageDraw.ImageDraw, y: int, rank: int) -> None:
+    if rank == 1:
+        draw.rectangle((0, y, _LBStyle.WIDTH, y + _LBStyle.ROW_HEIGHT), fill=(255, 215, 0, 40))
+    elif rank == 2:
+        draw.rectangle((0, y, _LBStyle.WIDTH, y + _LBStyle.ROW_HEIGHT), fill=(192, 192, 192, 30))
+    elif rank == 3:
+        draw.rectangle((0, y, _LBStyle.WIDTH, y + _LBStyle.ROW_HEIGHT), fill=(205, 127, 50, 30))
+
+
+def _find_rank(members: Iterable[tuple[discord.Member, int]], member_id: int) -> int:
+    for index, (member, _) in enumerate(members, start=1):
+        if member.id == member_id:
+            return index
+    return -1
+
+
+def _draw_row(
+    *,
+    img: Image.Image,
+    draw: ImageDraw.ImageDraw,
+    fonts: _LBFonts,
+    member: discord.Member,
+    xp: int,
+    rank: int,
+    y: int,
+    level: int,
+    highlight: bool,
+) -> None:
+    _draw_rank_bg(draw, y, rank)
+
+    avatar = _fetch_avatar(member, _LBStyle.AVATAR_SIZE)
+    img.paste(avatar, (_LBStyle.AVATAR_X, y + 13), avatar)
+
+    name_color = _LBStyle.ACCENT_COLOR if highlight else _LBStyle.TEXT_COLOR
+    suffix = " (You)" if highlight else ""
+
+    draw.text((_LBStyle.RANK_X, y + 28), f"#{rank}", _LBStyle.ACCENT_COLOR, font=fonts.row)
+    draw.text((_LBStyle.NAME_X, y + 20), member.name + suffix, name_color, font=fonts.row)
+    draw.text((_LBStyle.LEVEL_X, y + 20), f"LEVEL {level}", _LBStyle.TEXT_COLOR, font=fonts.small)
+    draw.text((_LBStyle.XP_X, y + 20), f"{xp} XP", _LBStyle.TEXT_COLOR, font=fonts.small)
 
 
 class LevelingConfig:
@@ -56,13 +136,16 @@ class LevelingConfig:
 
         await discord.utils.maybe_coroutine(self.redis_client.incr, member_key, 0)
 
-    async def add_xp(self, *, guild: discord.Guild, member: discord.Member) -> int:
+    async def add_xp(self, *, guild: discord.Guild, member: discord.Member) -> bool:
         guild_key = f"leveling:guild:{guild.id}"
         member_key = f"leveling:member:{guild.id}:{member.id}"
 
         config: Config = await discord.utils.maybe_coroutine(self.redis_client.hgetall, guild_key)  # pyright: ignore[reportAssignmentType]
         if not config or int(config.get("enabled", 0)) == 0:
-            return 0
+            return False
+
+        old_xp = await discord.utils.maybe_coroutine(self.redis_client.get, member_key)
+        old_xp = int(old_xp) if old_xp else 0
 
         min_xp = int(config.get("min_xp_points", 15))
         max_xp = int(config.get("max_xp_points", 25))
@@ -72,7 +155,12 @@ class LevelingConfig:
         xp_to_add = int(xp_to_add * xp_rate)
 
         new_xp = await self.redis_client.incrby(member_key, xp_to_add)
-        return new_xp
+        return self.leveled_up(old_xp=old_xp, new_xp=new_xp, exponent=float(config.get("exponent", 2.0)))
+
+    def leveled_up(self, *, old_xp: int, new_xp: int, exponent: float) -> bool:
+        old_level = self.calculate_level(xp=old_xp, exponent=exponent)
+        new_level = self.calculate_level(xp=new_xp, exponent=exponent)
+        return new_level > old_level
 
     def calculate_level(self, *, xp: int, exponent: float) -> int:
         level = int((xp / 100) ** (1 / exponent))
@@ -135,7 +223,7 @@ class LevelingConfig:
     async def get_guild_level_up_message(self, *, guild: discord.Guild) -> str:
         guild_key = f"leveling:guild:{guild.id}"
         message = await discord.utils.maybe_coroutine(self.redis_client.hget, guild_key, "level_up_message")
-        default_message = "Congratulations {user}, you have reached level {level}!"
+        default_message = "Congratulations $user_name, you have reached level $level!"
 
         if isinstance(message, bytes):
             return message.decode("utf-8")
@@ -165,7 +253,6 @@ class LevelingConfig:
         avatar_x = 50
         avatar_y = 50
         avatar_position = (avatar_x, avatar_y)
-        avatar_resample = Image.LANCZOS  # High-quality downsampling filter  # type: ignore
 
         progress_bar_x = 260
         progress_bar_y = 180
@@ -195,15 +282,7 @@ class LevelingConfig:
 
         rank_card_image = Image.new(canvas_mode, (canvas_width, canvas_height), custom_background)
 
-        avatar_response = requests.get(member.display_avatar.url)
-        avatar_image = Image.open(BytesIO(avatar_response.content)).convert("RGBA")
-        avatar_image = avatar_image.resize((avatar_size, avatar_size), avatar_resample)
-
-        avatar_mask = Image.new("L", (avatar_size, avatar_size), 0)
-        avatar_mask_draw = ImageDraw.Draw(avatar_mask)
-        avatar_mask_draw.ellipse((0, 0, avatar_size, avatar_size), fill=255)
-
-        avatar_image.putalpha(avatar_mask)
+        avatar_image = _fetch_avatar(member, avatar_size)
         rank_card_image.paste(avatar_image, avatar_position, avatar_image)
 
         draw_context = ImageDraw.Draw(rank_card_image)
@@ -340,3 +419,121 @@ class LevelingConfig:
             member_id = int(member_id_str)
             member_key = f"leveling:member:{guild.id}:{member_id}"
             await discord.utils.maybe_coroutine(self.redis_client.set, member_key, str(xp))
+
+    async def leaderboard(self, *, guild: discord.Guild) -> list[tuple[int, int]]:
+        pattern = f"leveling:member:{guild.id}:*"
+        members_keys = await discord.utils.maybe_coroutine(self.redis_client.keys, pattern)
+        members_xp: list[tuple[int, int]] = []
+        for key in members_keys:
+            member_id = int(key.split(":")[-1])
+            member_xp = await discord.utils.maybe_coroutine(self.redis_client.get, key)
+            xp = int(member_xp) if member_xp else 0
+            members_xp.append((member_id, xp))
+
+        members_xp.sort(key=lambda x: x[1], reverse=True)
+        return members_xp
+
+    def _leaderboard_card(
+        self,
+        *,
+        requester: discord.Member,
+        guild: discord.Guild,
+        members: list[tuple[discord.Member, int]],
+        exponent: float,
+        limit: int,
+    ) -> discord.File:
+        fonts = _LBFonts()
+
+        requester_rank = _find_rank(members, requester.id)
+        requester_in_top = requester_rank != -1 and requester_rank <= limit
+
+        visible_limit = limit if requester_in_top else limit + 2
+        height = _LBStyle.HEADER_HEIGHT + _LBStyle.ROW_HEIGHT * visible_limit
+
+        img = Image.new("RGBA", (_LBStyle.WIDTH, height), _LBStyle.BG_COLOR)
+        draw = ImageDraw.Draw(img)
+
+        draw.text(
+            (40, 25),
+            f"{guild.name} — Leaderboard",
+            _LBStyle.TEXT_COLOR,
+            font=fonts.title,
+        )
+
+        y = _LBStyle.HEADER_HEIGHT
+
+        for rank, (member, xp) in enumerate(members[:limit], start=1):
+            level = self.calculate_level(xp=xp, exponent=exponent)
+            _draw_row(
+                img=img,
+                draw=draw,
+                fonts=fonts,
+                member=member,
+                xp=xp,
+                rank=rank,
+                y=y,
+                level=level,
+                highlight=member.id == requester.id,
+            )
+            y += _LBStyle.ROW_HEIGHT
+
+        if not requester_in_top:
+            draw.text((40, y + 28), "...", _LBStyle.TEXT_COLOR, font=fonts.row)
+            y += _LBStyle.ROW_HEIGHT
+
+            requester_xp = next(xp for m, xp in members if m.id == requester.id)
+            level = self.calculate_level(xp=requester_xp, exponent=exponent)
+
+            _draw_row(
+                img=img,
+                draw=draw,
+                fonts=fonts,
+                member=requester,
+                xp=requester_xp,
+                rank=requester_rank,
+                y=y,
+                level=level,
+                highlight=True,
+            )
+
+        buffer = BytesIO()
+        img.save(buffer, "PNG")
+        buffer.seek(0)
+
+        return discord.File(buffer, filename="leaderboard.png")
+
+    async def leaderboard_card(
+        self,
+        *,
+        requester: discord.Member,
+        guild: discord.Guild,
+        limit: int = 10,
+    ) -> discord.File:
+        guild_key = f"leveling:guild:{guild.id}"
+        config: Config = await discord.utils.maybe_coroutine(self.redis_client.hgetall, guild_key)  # pyright: ignore[reportAssignmentType]
+        exponent = float(config.get("exponent", 2.0))
+
+        pattern = f"leveling:member:{guild.id}:*"
+        keys = await self.redis_client.keys(pattern)
+
+        members: list[tuple[discord.Member, int]] = []
+
+        for key in keys:
+            member_id = int(key.split(":")[-1])
+            member = guild.get_member(member_id)
+            if not member:
+                continue
+
+            xp = await self.redis_client.get(key)
+            members.append((member, int(xp) if xp else 0))
+
+        members.sort(key=lambda x: x[1], reverse=True)
+
+        return await asyncio.to_thread(
+            self._leaderboard_card,
+            requester=requester,
+            guild=guild,
+            members=members,
+            exponent=exponent,
+            limit=limit,
+        )

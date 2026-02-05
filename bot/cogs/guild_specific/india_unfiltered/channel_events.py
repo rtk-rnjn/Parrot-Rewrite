@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import time
 from typing import cast
 
+import arrow
 import discord
 from discord.ext import commands, tasks
 from pytz import timezone
@@ -22,7 +23,7 @@ class IndiaUnfilteredChannelEvents(commands.Cog):
         self.bot = bot
         self.cycle_general_chat_name.start()
 
-    @tasks.loop(time=[time(hour=x, minute=15, tzinfo=timezone("Asia/Kolkata")) for x in range(24)])
+    @tasks.loop(time=[time(hour=x, tzinfo=timezone("Asia/Kolkata")) for x in range(24)])
     async def cycle_general_chat_name(self) -> None:
         """Cycle the general chat channel name every 10 minutes."""
         if self.general_chat_channel is None:
@@ -32,26 +33,27 @@ class IndiaUnfilteredChannelEvents(commands.Cog):
         if len(new_name) > 32:
             new_name = f"{GENERAL_CHAT_NAME_PREFIX}general-chat"
 
+        reason = "Cycling general chat channel name."
+        embed = discord.Embed(
+            description=f"The general chat channel name is being updated to `{new_name}`.",
+            color=discord.Color.blue(),
+        )
+
+        next_iteration = self.cycle_general_chat_name.next_iteration
+        content = None
+        delete_after = 10 * 60
+        if next_iteration is not None:
+            tz = timezone("Asia/Kolkata")
+            if next_iteration.tzinfo:
+                tz = next_iteration.tzinfo
+
+            relative_time = discord.utils.format_dt(next_iteration, style="R")
+            content = f"-# Next update **{relative_time}**."
+
+            delete_after = arrow.get(next_iteration).to(tz).timestamp() - arrow.now(tz).timestamp() + 5
+
         try:
-            reason = "Cycling general chat channel name."
-            embed = discord.Embed(
-                title="General Chat Channel Name Update",
-                description=f"The general chat channel name is being updated to `{new_name}`.",
-                color=discord.Color.blue(),
-                timestamp=discord.utils.utcnow(),
-            ).add_field(
-                name="Reason",
-                value=reason,
-                inline=False,
-            )
-
-            next_iteration = self.cycle_general_chat_name.next_iteration
-            content = None
-            if next_iteration is not None:
-                relative_time = discord.utils.format_dt(next_iteration, style="R")
-                content = f"-# Next update **{relative_time}**."
-
-            await self.general_chat_channel.send(content=content, embed=embed, delete_after=10 * 60)
+            await self.general_chat_channel.send(content=content, embed=embed, delete_after=delete_after)
             await self.general_chat_channel.edit(name=new_name, reason=reason)
 
         except discord.Forbidden:
