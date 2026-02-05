@@ -136,6 +136,20 @@ class Leveling(commands.Cog):
         await self.leveling_config.set_guild_exponent(guild=ctx.guild, exponent=exponent)
         await ctx.reply(f"Leveling exponent has been set to {exponent}.")
 
+    @leveling.command(name="channel")
+    @commands.has_permissions(administrator=True)
+    async def channel(self, ctx: Context[Parrot], *, channel: discord.TextChannel):
+        """Set the channel for level up messages."""
+        await self.leveling_config.set_guild_level_up_channel(guild=ctx.guild, channel=channel)
+        await ctx.reply(f"Level up messages will now be sent in {channel.mention}.")
+
+    @leveling.command(name="message")
+    @commands.has_permissions(administrator=True)
+    async def message(self, ctx: Context[Parrot], *, message: str):
+        """Set the level up message. You can use the following placeholders: $user_name, $user_mention, $level, $xp."""
+        await self.leveling_config.set_guild_level_up_message(guild=ctx.guild, message=message)
+        await ctx.reply("Level up message has been updated.")
+
 
 async def setup(bot: Parrot) -> None:
     await bot.add_cog(Leveling(bot))

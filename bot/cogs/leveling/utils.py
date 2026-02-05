@@ -123,7 +123,7 @@ class LevelingConfig:
             "max_xp_points": 25,
             "exponent": 2.0,
             "level_up_channel": 0,
-            "level_up_message": "Congratulations {user}, you have reached level {level}!",
+            "level_up_message": "Congratulations $user_name, you have reached level $level!",
         }
 
         await discord.utils.maybe_coroutine(self.redis_client.hset, guild_key, mapping=dict(config))
