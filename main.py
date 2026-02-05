@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import logging.handlers
 import os
 from contextlib import suppress
 
 import uvicorn
 from dotenv import load_dotenv
-from rich.console import Console
 from rich.logging import RichHandler
 from rich.traceback import install as rich_tracebacks
 
@@ -19,10 +19,13 @@ with suppress(ImportError):
     uvloop.install()
 
 
-file = open("parrot.log", "a", encoding="utf-8")  # type: ignore[resource-leak] # pylint: disable=consider-using-with
-console = Console(file=file)
+file_handler = logging.handlers.RotatingFileHandler("parrot.log", maxBytes=5 * 1024 * 1024, backupCount=2, encoding="utf-8")
+file_handler.setFormatter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s"))
 
-logging.basicConfig(level=logging.INFO, format="%(message)s", handlers=[RichHandler(rich_tracebacks=True, console=console)])
+rich_handler = RichHandler(rich_tracebacks=True)
+rich_handler.setFormatter(logging.Formatter("%(message)s"))
+
+logging.basicConfig(level=logging.ERROR, handlers=[rich_handler, file_handler])
 
 LOGGING_CONFIG: dict[str, object] = {"version": 1, "disable_existing_loggers": False, "handlers": {"custom": {"()": RichHandler}}}
 
