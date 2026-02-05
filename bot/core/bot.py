@@ -21,6 +21,7 @@ from discord.ext import commands
 from lxml import etree  # type: ignore
 from pymongo.asynchronous.collection import AsyncCollection
 from pymongo.asynchronous.mongo_client import AsyncMongoClient
+from pymongo.results import DeleteResult
 from rapidfuzz import fuzz, process
 from redis.asyncio import Redis
 
@@ -95,6 +96,17 @@ class TimerConfig(TypedDict):
     metadata: dict[str, Any]
 
 
+class UserConfig(TypedDict):
+    _id: NotRequired[ObjectId]
+    timezone: str | None
+
+
+class GuildConfig(TypedDict):
+    _id: NotRequired[ObjectId]
+    prefix: str | None
+    levels: dict[str, int]  # member_id: xp
+
+
 class Parrot(commands.Bot):  # pylint: disable=too-many-public-methods
     DATABASE_NAME = "parrotDiscordBot"
 
@@ -155,7 +167,8 @@ class Parrot(commands.Bot):  # pylint: disable=too-many-public-methods
         self._db = self.mongo_client[self.DATABASE_NAME]
 
         self.timer_collection: AsyncCollection[TimerConfig] = self._db["timers"]
-        self.user_configurations_collection = self._db["user_configurations"]
+        self.user_configurations_collection: AsyncCollection[UserConfig] = self._db["user_configurations"]
+        self.guild_configurations_collection: AsyncCollection[GuildConfig] = self._db["guild_configurations"]
 
         self.redis_client = Redis(host=REDIS_HOST, port=REDIS_PORT, decode_responses=True, protocol=3)
         self.version = version
@@ -199,7 +212,7 @@ class Parrot(commands.Bot):  # pylint: disable=too-many-public-methods
         self.lavalink_node_pool: pomice.NodePool = pomice.NodePool()
         self.default_lavalink_node: pomice.Node | None = None
 
-        self.ON_READY_EVENT_FIRED = False
+        self.on_ready_event_fired = False
 
     @property
     def http_session(self) -> aiohttp.ClientSession:
@@ -211,13 +224,13 @@ class Parrot(commands.Bot):  # pylint: disable=too-many-public-methods
         await self.mongo_client["admin"].command("ping")
         await self.redis_client.ping()  # type: ignore
 
-        if not self.ON_READY_EVENT_FIRED:
+        if not self.on_ready_event_fired:
             if self.default_lavalink_node is None:
                 node = await self.lavalink_node_pool.create_node(bot=self, host="localhost", port=2333, password="youshallnotpass", identifier="MAIN")
 
                 self.default_lavalink_node = node
 
-            self.ON_READY_EVENT_FIRED = True
+            self.on_ready_event_fired = True
 
     @override
     async def get_prefix(self, message: discord.Message, /) -> list[str]:
@@ -296,8 +309,25 @@ class Parrot(commands.Bot):  # pylint: disable=too-many-public-methods
 
         raise TypeError("origin must be a Message or Interaction")
 
-    async def get_guild_prefix(self, guild: discord.Guild) -> str:
+    async def get_guild_prefix(self, guild: discord.Guild, /) -> str:
+        redis_key = f"guild:{guild.id}:prefix"
+        prefix = await self.redis_client.get(redis_key)
+        if prefix is not None:
+            return prefix
+
+        data = await self.guild_configurations_collection.find_one({"_id": guild.id, "prefix": {"$exists": True}}, {"prefix": 1})
+        if data is not None:
+            prefix = data["prefix"] or DEFAULT_PREFIX
+            await self.redis_client.set(redis_key, prefix)
+            return prefix
+
         return DEFAULT_PREFIX
+
+    async def set_guild_prefix(self, guild: discord.Guild, /, *, prefix: str = DEFAULT_PREFIX):
+        redis_key = f"guild:{guild.id}:prefix"
+        await self.redis_client.set(redis_key, prefix)
+
+        return await self.guild_configurations_collection.update_one({"_id": guild.id}, {"$set": {"prefix": prefix}}, upsert=True)
 
     async def get_or_fetch_message(self, channel: discord.abc.MessageableChannel, message_id: int) -> discord.Message | None:
         for message in self.cached_messages:
@@ -310,6 +340,13 @@ class Parrot(commands.Bot):  # pylint: disable=too-many-public-methods
             return None
 
     async def __check_once(self, ctx: Context[Self]) -> bool:
+        ONLY_OWNER = os.getenv("ONLY_OWNER", "false").lower() == "true"
+        if ONLY_OWNER:
+            if await self.is_owner(ctx.author):
+                return True
+
+            return False
+
         return True
 
     # Timer related methods
@@ -352,13 +389,13 @@ class Parrot(commands.Bot):  # pylint: disable=too-many-public-methods
                 _ = self.timer_task.cancel()
                 self.timer_task = self.loop.create_task(self.dispatch_timer())
 
-    async def call_timer(self, timer: TimerConfig) -> None:
+    async def call_timer(self, timer: TimerConfig, /) -> None:
         event_name = timer["event_name"]
         await self.delete_timer(timer)
 
         self.dispatch(event_name, timer)
 
-    async def delete_timer(self, timer: TimerConfig):
+    async def delete_timer(self, timer: TimerConfig, /) -> DeleteResult:
         delete_result = await self.timer_collection.delete_one({"_id": timer.get("_id")})
         if delete_result.deleted_count > 0 and self._current_timer is not None and timer.get("_id") == self._current_timer.get("_id") and self.timer_task is not None:
             _ = self.timer_task.cancel()
@@ -398,7 +435,7 @@ class Parrot(commands.Bot):  # pylint: disable=too-many-public-methods
 
         return timer
 
-    async def find_timer_by_counter(self, counter: int) -> TimerConfig | None:
+    async def find_timer_by_counter(self, counter: int, /) -> TimerConfig | None:
         timer = await self.timer_collection.find_one({"counter": counter})
         return timer
 

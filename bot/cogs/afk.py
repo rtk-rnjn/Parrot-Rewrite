@@ -63,32 +63,34 @@ class AFK(commands.Cog):
         if message.guild is None:
             return
 
-        await self.remove_afk_status(message)
+        await self.remove_afk_status(guild=message.guild, author_id=message.author.id, original_nick=message.author.display_name, destination=message.channel)
 
-    async def remove_afk_status(self, message: discord.Message):
-        assert message.guild is not None  # for mypy
-
-        redis_key = f"afk:{message.guild.id}:{message.author.id}"
+    async def remove_afk_status(self, *, guild: discord.Guild, author_id: int, original_nick: str | None = None, destination: discord.abc.Messageable):
+        redis_key = f"afk:{guild.id}:{author_id}"
         afk_data = cast(AFKData, await discord.utils.maybe_coroutine(self.bot.redis_client.hgetall, redis_key))
 
         if afk_data:
+            member = guild.get_member(author_id)
+            if member is None:
+                return
+
             await discord.utils.maybe_coroutine(self.bot.redis_client.delete, redis_key)
             try:
-                original_nick = message.author.display_name
-                if original_nick.startswith("[AFK] "):
+                if original_nick is not None and original_nick.startswith("[AFK] "):
                     new_nick = original_nick.lstrip("[AFK] ").strip("[AFK]")
-                    if isinstance(message.author, discord.Member):
-                        await message.author.edit(nick=new_nick, reason=f"{message.author} is no longer AFK")
+
+                    if member:
+                        await member.edit(nick=new_nick, reason=f"{member} is no longer AFK")
             except discord.Forbidden:
                 pass
 
             mentions = afk_data.get("mentions", 0)
             if mentions > 0:
-                content = f"Welcome back {message.author.mention}! You were mentioned {afk_data.get('mentions', 0)} times while you were AFK."
+                content = f"Welcome back {member.mention}! You were mentioned {afk_data.get('mentions', 0)} times while you were AFK."
             else:
-                content = f"Welcome back {message.author.mention}!"
+                content = f"Welcome back {member.mention}!"
 
-            await message.channel.send(content, delete_after=10)
+            await destination.send(content, delete_after=10)
 
     @commands.Cog.listener()
     async def on_message_edit(self, before: discord.Message, after: discord.Message) -> None:
@@ -98,7 +100,24 @@ class AFK(commands.Cog):
         if after.guild is None:
             return
 
-        await self.remove_afk_status(after)
+        await self.remove_afk_status(guild=after.guild, author_id=after.author.id, original_nick=before.author.display_name, destination=after.channel)
+
+    @commands.Cog.listener()
+    async def on_raw_message_edit(self, payload: discord.RawMessageUpdateEvent) -> None:
+        if payload.guild_id is None:
+            return
+
+        guild = self.bot.get_guild(payload.guild_id)
+        if guild is None:
+            return
+
+        channel = guild.get_channel(payload.channel_id)
+        if channel is None or not isinstance(channel, discord.abc.Messageable):
+            return
+
+        message = payload.message
+
+        await self.remove_afk_status(guild=guild, author_id=message.author.id, original_nick=message.author.display_name, destination=channel)
 
     @commands.Cog.listener(name="on_message")
     async def on_mention(self, message: discord.Message) -> None:
