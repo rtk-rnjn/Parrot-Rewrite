@@ -15,6 +15,8 @@ SERVER_ID = 776415524056727582
 GENERAL_CHAT_ID = 779410999857905705
 GENERAL_CHAT_NAME_PREFIX = "\N{WHITE FOUR POINTED STAR}\N{HANGZHOU NUMERAL TWO}"
 
+LOOP = [time(hour=x) for x in range(24)]
+
 
 class IndiaUnfilteredChannelEvents(commands.Cog):
     """Events for the INDIA UNFILTERED server."""
@@ -23,7 +25,7 @@ class IndiaUnfilteredChannelEvents(commands.Cog):
         self.bot = bot
         self.cycle_general_chat_name.start()
 
-    @tasks.loop(time=[time(hour=x, tzinfo=timezone("Asia/Kolkata")) for x in range(24)])
+    @tasks.loop(time=LOOP)
     async def cycle_general_chat_name(self) -> None:
         """Cycle the general chat channel name every 10 minutes."""
         if self.general_chat_channel is None:

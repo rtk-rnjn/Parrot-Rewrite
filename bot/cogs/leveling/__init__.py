@@ -136,5 +136,6 @@ class Leveling(commands.Cog):
         await self.leveling_config.set_guild_exponent(guild=ctx.guild, exponent=exponent)
         await ctx.reply(f"Leveling exponent has been set to {exponent}.")
 
+
 async def setup(bot: Parrot) -> None:
     await bot.add_cog(Leveling(bot))
