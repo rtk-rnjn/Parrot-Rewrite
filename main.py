@@ -25,7 +25,7 @@ file_handler.setFormatter(logging.Formatter("%(asctime)s - %(name)s - %(levelnam
 rich_handler = RichHandler(rich_tracebacks=True)
 rich_handler.setFormatter(logging.Formatter("%(message)s"))
 
-logging.basicConfig(level=logging.ERROR, handlers=[rich_handler, file_handler])
+logging.basicConfig(level=logging.INFO, handlers=[rich_handler, file_handler])
 
 LOGGING_CONFIG: dict[str, object] = {"version": 1, "disable_existing_loggers": False, "handlers": {"custom": {"()": RichHandler}}}
 
