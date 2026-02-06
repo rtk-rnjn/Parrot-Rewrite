@@ -267,7 +267,7 @@ class Meta(commands.Cog):
 
     @commands.group(name="bot", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
-    async def bot_group(self, ctx):
+    async def administrator_commands(self, ctx):
         pass
 
     async def _resolve_image_url(self, ctx: Context[Parrot], url: str | None) -> str | None:
@@ -301,7 +301,7 @@ class Meta(commands.Cog):
             await editor(data)
             await ctx.reply(success)
 
-    @bot_group.command(name="avatar", aliases=["av", "pfp"])
+    @administrator_commands.command(name="avatar", aliases=["av", "pfp"])
     @commands.has_permissions(administrator=True)
     async def bot_avatar(self, ctx, *, url: str | None = None):
         await self._edit_image(
@@ -311,7 +311,7 @@ class Meta(commands.Cog):
             success="Bot avatar updated successfully.",
         )
 
-    @bot_group.command(name="banner")
+    @administrator_commands.command(name="banner")
     @commands.has_permissions(administrator=True)
     async def bot_banner(self, ctx, *, url: str | None = None):
         await self._edit_image(
@@ -321,13 +321,13 @@ class Meta(commands.Cog):
             success="Bot banner updated successfully.",
         )
 
-    @bot_group.command(name="nickname", aliases=["nick"])
+    @administrator_commands.command(name="nickname", aliases=["nick"])
     @commands.has_permissions(administrator=True)
     async def bot_username(self, ctx, *, username: str):
         await ctx.guild.me.edit(nick=username)
         await ctx.reply("Bot username updated successfully.")
 
-    @bot_group.command(name="bio", aliases=["about"])
+    @administrator_commands.command(name="bio", aliases=["about"])
     @commands.has_permissions(administrator=True)
     async def bot_bio(self, ctx, *, bio: str):
         await ctx.guild.me.edit(bio=bio)
