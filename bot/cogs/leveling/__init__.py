@@ -95,7 +95,8 @@ class Leveling(commands.Cog):
             xp=await self.leveling_config.get_member_xp(guild=message.guild, member=message.author),
         )
 
-        await channel.send(content)
+        if channel.permissions_for(message.guild.me).send_messages:
+            await channel.send(content)
 
     @rank.before_invoke
     @leaderboard.before_invoke
