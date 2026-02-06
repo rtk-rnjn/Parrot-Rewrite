@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import time
 from collections import Counter
+from typing import Awaitable, Callable
 
 import discord
 from discord.ext import commands
@@ -263,6 +264,74 @@ class Meta(commands.Cog):
         if role.icon:
             embed.set_thumbnail(url=role.icon.url)
         await ctx.reply(embed=embed)
+
+    @commands.group(name="bot", invoke_without_command=True)
+    @commands.has_permissions(administrator=True)
+    async def bot_group(self, ctx):
+        pass
+
+    async def _resolve_image_url(self, ctx: Context[Parrot], url: str | None) -> str | None:
+        if ctx.message.attachments:
+            return ctx.message.attachments[0].url
+        if url:
+            return url
+        ref = ctx.message.reference
+        if ref and isinstance(ref.resolved, discord.Message) and ref.resolved.attachments:
+            return ref.resolved.attachments[0].url
+        return None
+
+    async def _edit_image(
+        self,
+        *,
+        ctx: Context[Parrot],
+        url: str | None,
+        editor: Callable[[bytes], Awaitable[None]],
+        success: str,
+    ):
+        url = await self._resolve_image_url(ctx, url)
+        if not url:
+            await ctx.reply("Please provide a URL or attach an image.")
+            return
+
+        async with self.bot.http_session.get(url) as resp:
+            if resp.status != 200:
+                await ctx.reply("Failed to download the image. Please check the URL.")
+                return
+            data = await resp.read()
+            await editor(data)
+            await ctx.reply(success)
+
+    @bot_group.command(name="avatar", aliases=["av", "pfp"])
+    @commands.has_permissions(administrator=True)
+    async def bot_avatar(self, ctx, *, url: str | None = None):
+        await self._edit_image(
+            ctx=ctx,
+            url=url,
+            editor=lambda d: ctx.guild.me.edit(avatar=d),
+            success="Bot avatar updated successfully.",
+        )
+
+    @bot_group.command(name="banner")
+    @commands.has_permissions(administrator=True)
+    async def bot_banner(self, ctx, *, url: str | None = None):
+        await self._edit_image(
+            ctx=ctx,
+            url=url,
+            editor=lambda d: ctx.guild.me.edit(banner=d),
+            success="Bot banner updated successfully.",
+        )
+
+    @bot_group.command(name="nickname", aliases=["nick"])
+    @commands.has_permissions(administrator=True)
+    async def bot_username(self, ctx, *, username: str):
+        await ctx.guild.me.edit(nick=username)
+        await ctx.reply("Bot username updated successfully.")
+
+    @bot_group.command(name="bio", aliases=["about"])
+    @commands.has_permissions(administrator=True)
+    async def bot_bio(self, ctx, *, bio: str):
+        await ctx.guild.me.edit(bio=bio)
+        await ctx.reply("Bot bio updated successfully.")
 
 
 async def setup(bot: Parrot) -> None:

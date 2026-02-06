@@ -109,12 +109,20 @@ def _draw_row(
 class LevelingConfig:
     def __init__(self, *, redis_client: Redis) -> None:
         self.redis_client = redis_client
+        self.guild_existing_cache: set[int] = set()
+        self.member_existing_cache: set[tuple[int, int]] = set()  # (guild_id, member_id)
 
-    async def register_guild(self, *, guild: discord.Guild):
+    async def register_guild(self, *, guild: discord.Guild) -> bool:
+        try:
+            return guild.id in self.guild_existing_cache
+        except KeyError:
+            pass
+
         guild_key = f"leveling:guild:{guild.id}"
         exists = await self.redis_client.exists(guild_key)
         if exists:
-            return
+            self.guild_existing_cache.add(guild.id)
+            return False
 
         config: Config = {
             "enabled": 1,
@@ -127,14 +135,23 @@ class LevelingConfig:
         }
 
         await discord.utils.maybe_coroutine(self.redis_client.hset, guild_key, mapping=dict(config))
+        self.guild_existing_cache.add(guild.id)
+        return True
 
     async def register_member(self, *, member: discord.Member):
+        try:
+            return (member.guild.id, member.id) in self.member_existing_cache
+        except KeyError:
+            pass
+
         member_key = f"leveling:member:{member.guild.id}:{member.id}"
         exists = await self.redis_client.exists(member_key)
         if exists:
+            self.member_existing_cache.add((member.guild.id, member.id))
             return
 
         await discord.utils.maybe_coroutine(self.redis_client.incr, member_key, 0)
+        self.member_existing_cache.add((member.guild.id, member.id))
 
     async def add_xp(self, *, guild: discord.Guild, member: discord.Member) -> bool:
         guild_key = f"leveling:guild:{guild.id}"

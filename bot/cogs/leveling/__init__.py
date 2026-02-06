@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 import discord
 from discord.ext import commands
 
-from bot.core import Context, Parrot, DeleteView
+from bot.core import Context, DeleteView, Parrot
 
 from .utils import LevelingConfig
 
