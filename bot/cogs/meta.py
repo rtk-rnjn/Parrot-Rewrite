@@ -303,7 +303,7 @@ class Meta(commands.Cog):
 
     @administrator_commands.command(name="avatar", aliases=["av", "pfp"])
     @commands.has_permissions(administrator=True)
-    async def bot_avatar(self, ctx, *, url: str | None = None):
+    async def update_bot_avatar(self, ctx, *, url: str | None = None):
         await self._edit_image(
             ctx=ctx,
             url=url,
@@ -313,7 +313,7 @@ class Meta(commands.Cog):
 
     @administrator_commands.command(name="banner")
     @commands.has_permissions(administrator=True)
-    async def bot_banner(self, ctx, *, url: str | None = None):
+    async def update_bot_banner(self, ctx, *, url: str | None = None):
         await self._edit_image(
             ctx=ctx,
             url=url,
@@ -323,13 +323,13 @@ class Meta(commands.Cog):
 
     @administrator_commands.command(name="nickname", aliases=["nick"])
     @commands.has_permissions(administrator=True)
-    async def bot_username(self, ctx, *, username: str):
+    async def update_bot_nickname(self, ctx, *, username: str):
         await ctx.guild.me.edit(nick=username)
         await ctx.reply("Bot username updated successfully.")
 
     @administrator_commands.command(name="bio", aliases=["about"])
     @commands.has_permissions(administrator=True)
-    async def bot_bio(self, ctx, *, bio: str):
+    async def update_bot_bio(self, ctx, *, bio: str):
         await ctx.guild.me.edit(bio=bio)
         await ctx.reply("Bot bio updated successfully.")
 
