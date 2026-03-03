@@ -114,6 +114,7 @@ class NSFW(commands.Cog):
     @commands.command()
     @commands.cooldown(1, 5, commands.BucketType.user)
     @commands.max_concurrency(1, commands.BucketType.user)
+    @commands.is_nsfw()
     async def n(
         self,
         ctx: Context[Parrot],
