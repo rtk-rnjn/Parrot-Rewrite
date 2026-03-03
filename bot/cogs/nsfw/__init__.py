@@ -9,7 +9,7 @@ import aiohttp
 import discord
 from discord.ext import commands
 
-from bot.core import Context, Parrot
+from bot.core import Context, DeleteView, Parrot
 
 STATIC_PIN_URL = "https://imagex1.sx.cdn.live"
 REGEX_STRING = r"/images/pinporn/\d+/\d+/\d+/\d+\.(webp)"
@@ -117,23 +117,22 @@ class NSFW(commands.Cog):
     async def n(
         self,
         ctx: Context[Parrot],
-        count: int | None = 1,
         *,
         endpoint: Literal["gif", "jav", "rb", "ahegao", "twitter"] = "gif",
     ) -> None:
         """Mature Content. 18+ only Please."""
 
-        count = max(1, count or 1)
-        count = min(count, 10)
+        view = DeleteView(author=ctx.author)
 
-        r = await self.bot.http_session.get(
-            f"https://scathach.redsplit.org/v3/nsfw/{endpoint}/",
-        )
-        if r.status == 200:
-            res = await r.json()
-            await ctx.send(embed=discord.Embed(timestamp=discord.utils.utcnow()).set_image(url=res["url"]))
-        else:
-            await ctx.send("Failed to fetch NSFW content. Please try again later.")
+        async with ctx.typing():
+            r = await self.bot.http_session.get(
+                f"https://scathach.redsplit.org/v3/nsfw/{endpoint}/",
+            )
+            if r.status == 200:
+                res = await r.json()
+                await ctx.send(embed=discord.Embed(timestamp=discord.utils.utcnow()).set_image(url=res["url"]), view=view)
+            else:
+                await ctx.send("Failed to fetch NSFW content. Please try again later.", view=view)
 
     def _try_from_cache(self, type_str: str) -> str | None:
         return choice(self.cached_images.get(type_str, [None]))
@@ -161,19 +160,21 @@ class NSFW(commands.Cog):
         self.cached_images[type_str].append(url)
         return embed
 
-    async def _method(self, ctx: Context) -> None:
+    async def _method(self, ctx: Context[Parrot]) -> discord.Message:
         command_name = ctx.command.qualified_name if ctx.command else "unknown"
 
         embed = await self.get_embed(f"{command_name}")
         if embed is not None:
-            await ctx.reply(
+            view = DeleteView(author=ctx.author)
+            return await ctx.reply(
                 embed=embed.set_footer(
                     text=f"Requested by {ctx.author}",
                     icon_url=ctx.author.display_avatar.url,
                 ),
+                view=view,
             )
-            return
-        await ctx.reply(f"{ctx.author.mention} something not right? This is not us but the API")
+
+        return await ctx.reply(f"{ctx.author.mention} something not right? This is not us but the API")
 
     def command_loader(self) -> None:
         method = self._method
