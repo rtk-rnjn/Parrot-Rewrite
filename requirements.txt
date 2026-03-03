@@ -2,6 +2,7 @@ aiofiles==25.1.0
 aiohappyeyeballs==2.6.1
 aiohttp==3.13.2
 aiosignal==1.4.0
+aiosqlite==0.22.1
 arrow==1.4.0
 astroid==4.0.2
 attrs==25.4.0
