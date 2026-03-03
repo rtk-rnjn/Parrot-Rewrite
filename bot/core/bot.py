@@ -24,6 +24,7 @@ from pymongo.asynchronous.mongo_client import AsyncMongoClient
 from pymongo.results import DeleteResult
 from rapidfuzz import fuzz, process
 from redis.asyncio import Redis
+import aiosqlite
 
 from .context import Context
 from .help import HelpCommand
@@ -145,6 +146,7 @@ class Parrot(commands.Bot):  # pylint: disable=too-many-public-methods
     }
 
     user: discord.ClientUser  # pyright: ignore[reportIncompatibleMethodOverride]
+    sql: aiosqlite.Connection
 
     assets = Assets()
 
@@ -186,12 +188,14 @@ class Parrot(commands.Bot):  # pylint: disable=too-many-public-methods
         self.timer_task: asyncio.Task[None] | None = None
 
         self.valid_timezones: set[str] = set(get_zonefile_instance().zones)
+
+        # fmt: off
         self._timezone_aliases: dict[str, str] = {
             "Eastern Time": "America/New_York",
             "Central Time": "America/Chicago",
             "Mountain Time": "America/Denver",
             "Pacific Time": "America/Los_Angeles",
-            # (Unfortunately) special case American timezone abbreviations
+
             "EST": "America/New_York",
             "CST": "America/Chicago",
             "MST": "America/Denver",
@@ -200,15 +204,17 @@ class Parrot(commands.Bot):  # pylint: disable=too-many-public-methods
             "CDT": "America/Chicago",
             "MDT": "America/Denver",
             "PDT": "America/Los_Angeles",
-            # Common abbreviations
+
             "IST": "Asia/Kolkata",
             "BST": "Europe/London",
             "JST": "Asia/Tokyo",
             "AEST": "Australia/Sydney",
-            # Common UTC offsets
+
             "UTC": "UTC",
             "GMT": "UTC",
         }
+        # fmt: on
+
         self.broadcasted_messages: list[str] = []
 
         self.lavalink_node_pool: pomice.NodePool = pomice.NodePool()
@@ -228,9 +234,12 @@ class Parrot(commands.Bot):  # pylint: disable=too-many-public-methods
 
         if not self.on_ready_event_fired:
             if self.default_lavalink_node is None:
-                node = await self.lavalink_node_pool.create_node(bot=self, host="localhost", port=2333, password="youshallnotpass", identifier="MAIN")
+                try:
+                    node = await self.lavalink_node_pool.create_node(bot=self, host="localhost", port=2333, password="youshallnotpass", identifier="MAIN")
 
-                self.default_lavalink_node = node
+                    self.default_lavalink_node = node
+                except pomice.exceptions.NodeConnectionFailure:
+                    pass
 
             self.on_ready_event_fired = True
 

@@ -217,3 +217,7 @@ __marimo__/
 
 # Lavalink
 Lavalink.jar
+
+# SQLite database files
+*.db
+*.sqlite

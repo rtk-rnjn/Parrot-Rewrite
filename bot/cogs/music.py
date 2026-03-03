@@ -78,6 +78,8 @@ class Music(commands.Cog):
             return
 
         node = self.bot.lavalink_node_pool.get_best_node(algorithm=pomice.NodeAlgorithm.by_players)
+        result = None
+
         for search_type in [pomice.SearchType.scsearch]:
             result = await node.get_tracks(query, search_type=search_type, ctx=ctx)
             if result is not None:

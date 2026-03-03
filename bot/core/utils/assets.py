@@ -4,8 +4,10 @@ import json
 import pathlib
 import random
 from enum import Enum
-from typing import TypedDict
+from typing import TYPE_CHECKING, TypedDict
 
+import aiofiles
+import aiosqlite
 import frontmatter
 from yaml import safe_load as yaml_load
 
@@ -102,6 +104,18 @@ class Emoji(Enum):
 
 
 class Assets:
+    BUCKET_SQLITE_SCHEMA = """
+    CREATE TABLE IF NOT EXISTS bucket (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        object_key TEXT NOT NULL,
+        path_url TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        metadata JSON,
+
+        UNIQUE(object_key)
+    );
+    """
+
     def __init__(self):
         self._adjectives: list[str] = []
         self._random_sentences: list[str] = []
@@ -123,6 +137,62 @@ class Assets:
         self._quotes_qotd: list[Quote] = []
 
         self.emoji = Emoji
+        self.connection: aiosqlite.Connection | None = None
+
+    async def connect(self):
+        self.connection = await aiosqlite.connect("bucket.sqlite")
+        await self.connection.executescript(self.BUCKET_SQLITE_SCHEMA)
+        await self.connection.commit()
+
+    async def close(self):
+        if self.connection:
+            await self.connection.close()
+
+    async def add_to_bucket(self, *, object_key: str, object_data: bytes, metadata: dict | None = None) -> pathlib.Path:
+        if self.connection is None:
+            await self.connect()
+
+        if TYPE_CHECKING:
+            assert self.connection is not None
+
+        path_url = f"bucket/{object_key}.webp"
+        await self.connection.execute(
+            "INSERT OR IGNORE INTO bucket (object_key, path_url, metadata) VALUES (?, ?, ?)",
+            (object_key, path_url, json.dumps(metadata) if metadata else None),
+        )
+
+        async with aiofiles.open(path_url, "wb") as file:
+            await file.write(object_data)
+
+        await self.connection.commit()
+        return pathlib.Path(path_url)
+
+    async def get_from_bucket(self, object_key: str) -> bytes | None:
+        if self.connection is None:
+            await self.connect()
+
+        if TYPE_CHECKING:
+            assert self.connection is not None
+
+        cursor = await self.connection.execute("SELECT path_url FROM bucket WHERE object_key = ?", (object_key,))
+        row = await cursor.fetchone()
+        if row is None:
+            return None
+
+        path_url = row[0]
+        async with aiofiles.open(path_url, "rb") as file:
+            return await file.read()
+    
+    async def search_bucket(self, query: str) -> list[dict[str, str]]:
+        if self.connection is None:
+            await self.connect()
+
+        if TYPE_CHECKING:
+            assert self.connection is not None
+
+        cursor = await self.connection.execute("SELECT object_key, path_url FROM bucket WHERE object_key LIKE ?", (f"%{query}%",))
+        rows = await cursor.fetchall()
+        return [{"object_key": row[0], "path_url": row[1]} for row in rows]
 
     @property
     def random_adjective(self):
