@@ -130,9 +130,11 @@ class NSFW(commands.Cog):
             )
             if r.status == 200:
                 res = await r.json()
-                await ctx.send(embed=discord.Embed(timestamp=discord.utils.utcnow()).set_image(url=res["url"]), view=view)
+                message = await ctx.send(embed=discord.Embed(timestamp=discord.utils.utcnow()).set_image(url=res["url"]), view=view)
+                view.message = message
             else:
-                await ctx.send("Failed to fetch NSFW content. Please try again later.", view=view)
+                message = await ctx.send("Failed to fetch NSFW content. Please try again later.", view=view)
+                view.message = message
 
     def _try_from_cache(self, type_str: str) -> str | None:
         return choice(self.cached_images.get(type_str, [None]))
@@ -166,13 +168,15 @@ class NSFW(commands.Cog):
         embed = await self.get_embed(f"{command_name}")
         if embed is not None:
             view = DeleteView(author=ctx.author)
-            return await ctx.reply(
+            msg = await ctx.reply(
                 embed=embed.set_footer(
                     text=f"Requested by {ctx.author}",
                     icon_url=ctx.author.display_avatar.url,
                 ),
                 view=view,
             )
+            view.message = msg
+            return msg
 
         return await ctx.reply(f"{ctx.author.mention} something not right? This is not us but the API")
 
