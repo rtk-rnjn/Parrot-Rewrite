@@ -77,6 +77,7 @@ __all_cogs__ = [
     "bot.cogs.love",
     "bot.cogs.afk",
     "bot.cogs.leveling"
+    "bot.cogs.nsfw",
 ]
 # fmt: on
 
