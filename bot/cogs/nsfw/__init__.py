@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import asyncio
 import re
+from random import choice, random
 from typing import Literal
 
 import aiohttp
 import discord
 from discord.ext import commands
-from random import choice, random
 
 from bot.core import Context, Parrot
 
@@ -19,42 +19,36 @@ URL = "https://www.sex.com/en/gifs?search={query}&page={page}"
 
 
 ENDPOINTS = [
-    "waifu",
-    "neko",
-    "shinobu",
-    "megumin",
-    "bully",
-    "cuddle",
-    "cry",
-    "hug",
-    "awoo",
-    "kiss",
-    "lick",
-    "pat",
-    "smug",
-    "bonk",
-    "yeet",
-    "blush",
-    "smile",
-    "wave",
-    "highfive",
-    "handhold",
-    "nom",
-    "bite",
-    "glomp",
-    "slap",
-    "kill",
-    "happy",
-    "wink",
-    "poke",
-    "dance",
-    "cringe",
+    "hentai",
+    "holo",
+    "hneko",
+    "hkitsune",
+    "kemonomimi",
+    "pgif",
+    "4k",
+    "kanna",
+    "ass",
+    "pussy",
+    "thigh",
+    "hthigh",
+    "paizuri",
+    "tentacle",
+    "boobs",
+    "hboobs",
+    "yaoi",
+    "hmidriff",
+    "hass",
+    "anal",
+    "gonewild",
+    "hanal",
 ]
+
 
 class NSFW(commands.Cog):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
         self.cached_images: dict[str, list[str]] = {}
+        self.url = "https://nekobot.xyz/api/image"
 
         self.command_loader()
 
@@ -141,7 +135,6 @@ class NSFW(commands.Cog):
         else:
             await ctx.send("Failed to fetch NSFW content. Please try again later.")
 
-
     def _try_from_cache(self, type_str: str) -> str | None:
         return choice(self.cached_images.get(type_str, [None]))
 
@@ -169,7 +162,9 @@ class NSFW(commands.Cog):
         return embed
 
     async def _method(self, ctx: Context) -> None:
-        embed = await self.get_embed(f"{ctx.command.qualified_name}")
+        command_name = ctx.command.qualified_name if ctx.command else "unknown"
+
+        embed = await self.get_embed(f"{command_name}")
         if embed is not None:
             await ctx.reply(
                 embed=embed.set_footer(
@@ -192,6 +187,7 @@ class NSFW(commands.Cog):
                 await method(ctx)
 
             self.bot.add_command(command_callback)
+
 
 async def setup(bot: Parrot) -> None:
     await bot.add_cog(NSFW(bot))
