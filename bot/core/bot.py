@@ -8,6 +8,7 @@ import re
 from typing import Any, Iterable, NamedTuple, NotRequired, Self, TypedDict, override
 
 import aiohttp
+import aiosqlite
 import arrow
 import dateutil
 import discord
@@ -24,7 +25,6 @@ from pymongo.asynchronous.mongo_client import AsyncMongoClient
 from pymongo.results import DeleteResult
 from rapidfuzz import fuzz, process
 from redis.asyncio import Redis
-import aiosqlite
 
 from .context import Context
 from .help import HelpCommand

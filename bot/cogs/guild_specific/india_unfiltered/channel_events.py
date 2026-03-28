@@ -15,7 +15,7 @@ SERVER_ID = 776415524056727582
 GENERAL_CHAT_ID = 779410999857905705
 GENERAL_CHAT_NAME_PREFIX = "\N{WHITE FOUR POINTED STAR}\N{HANGZHOU NUMERAL TWO}"
 
-LOOP = [time(hour=x) for x in range(24)]
+LOOP = [time(hour=x) for x in range(0, 24, 4)]
 
 
 class IndiaUnfilteredChannelEvents(commands.Cog):

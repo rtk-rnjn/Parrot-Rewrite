@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import re
 from random import choice, random
-from typing import Literal
+from typing import Dict, List, Literal, Optional
 
 import aiohttp
 import discord
@@ -11,11 +11,85 @@ from discord.ext import commands
 
 from bot.core import Context, DeleteView, Parrot
 
-STATIC_PIN_URL = "https://imagex1.sx.cdn.live"
-REGEX_STRING = r"/images/pinporn/\d+/\d+/\d+/\d+\.(webp)"
 
-REGEX = re.compile(REGEX_STRING)
-URL = "https://www.sex.com/en/gifs?search={query}&page={page}"
+class AsyncSexGifScraper:
+    URL = "https://www.sex.com/en/gifs?search={query}&page={page}"
+    STATIC_PIN_URL = "https://imagex1.sx.cdn.live"
+    BASE_URL = "https://www.sex.com/en/gifs"
+
+    REGEX_STRING = r"/images/pinporn/\d+/\d+/\d+/\d+\.(webp)"
+    PIN_ID_REGEX_STRING = r'\\"id\\":\d+'
+
+    def __init__(
+        self,
+        *,
+        timeout: int = 5,
+        retries: int = 5,
+        retry_delay: float = 1.0,
+        max_connections: int = 20,
+    ):
+        self.timeout = timeout
+        self.retries = retries
+        self.retry_delay = retry_delay
+
+        self._img_re = re.compile(self.REGEX_STRING)
+        self._pin_re = re.compile(self.PIN_ID_REGEX_STRING)
+
+        self._connector = aiohttp.TCPConnector(limit=max_connections)
+        self._session: Optional[aiohttp.ClientSession] = None
+
+    async def __aenter__(self):
+        self._session = aiohttp.ClientSession(
+            connector=self._connector,
+            timeout=aiohttp.ClientTimeout(total=self.timeout),
+            headers={"User-Agent": "Mozilla/5.0 (X11; Linux x86_64)"},
+        )
+        return self
+
+    async def __aexit__(self, *exc):
+        if self._session:
+            await self._session.close()
+
+    async def _make_request(self, query: str, page: int) -> str:
+        assert self._session is not None
+        url = self.URL.format(query=query, page=page)
+
+        for attempt in range(self.retries):
+            try:
+                async with self._session.get(url) as resp:
+                    resp.raise_for_status()
+                    return await resp.text()
+            except (aiohttp.ClientError, asyncio.TimeoutError):
+                if attempt == self.retries - 1:
+                    raise
+                await asyncio.sleep(self.retry_delay * (attempt + 1))
+
+        raise RuntimeError("Unreachable")
+
+    def _extract_pairs(self, html: str) -> List[Dict[str, str]]:
+        results: List[Dict[str, str]] = []
+
+        for static, pin in zip(
+            self._img_re.finditer(html),
+            self._pin_re.finditer(html),
+        ):
+            image_url = self.STATIC_PIN_URL + static.group(0)
+            pin_id = pin.group(0).split(":")[1]
+            uri = f"{self.BASE_URL}/{pin_id}"
+
+            results.append(
+                {
+                    "image_url": image_url,
+                    "pin_id": pin_id,
+                    "uri": uri,
+                }
+            )
+
+        return results
+
+    async def search(self, query: str, page: int = 1) -> List[Dict[str, str]]:
+        html = await self._make_request(query=query, page=page)
+        return self._extract_pairs(html)
 
 
 ENDPOINTS = [
@@ -49,67 +123,37 @@ class NSFW(commands.Cog):
         self.bot = bot
         self.cached_images: dict[str, list[str]] = {}
         self.url = "https://nekobot.xyz/api/image"
-
         self.command_loader()
 
-    async def _request(self, *, query: str, page: int) -> str | None:
-        url = URL.format(query=query, page=page)
-        try:
-            async with asyncio.timeout(5):
-                response = await self.bot.http_session.get(url)
-                if response.status == 200:
-                    soup = await response.text()
-                    return soup
-        except (aiohttp.ClientError, asyncio.TimeoutError):
-            return None
+    @commands.command(name="nsfw-search")
+    @commands.is_nsfw()
+    async def nsfw_search(self, ctx: Context[Parrot], *, query: str) -> None:
+        """Fetch GIF directly from sex.com using async scraper."""
 
-    def _parse_images(self, html: str) -> set[str]:
-        return {STATIC_PIN_URL + match.group(0) for match in REGEX.finditer(html)}
-
-    async def _save_images(self, images: set[str], *, query: str) -> None:
-        for index, image_url in enumerate(images):
+        async with ctx.typing():
             try:
-                async with self.bot.http_session.get(image_url) as response:
-                    if response.status == 200:
-                        image_data = await response.read()
-                        await self.bot.assets.add_to_bucket(object_key=f"{query}_{index}", object_data=image_data)
-                        print(f"Saved image: {image_url}")
-            except aiohttp.ClientError:
-                print(f"Failed to fetch image: {image_url}")
-                continue
+                async with AsyncSexGifScraper(max_connections=40) as scraper:
+                    items = await scraper.search(query=query, page=1)
+            except Exception:
+                await ctx.send("Failed to fetch NSFW content.")
+                return
 
-    @commands.command(name="nsfw-load")
-    @commands.is_nsfw()
-    @commands.is_owner()
-    async def nsfw_command_load(self, ctx: Context[Parrot], *, query: str) -> None:
-        html = await self._request(query=query, page=1)
-        if html is None:
-            await ctx.send("Failed to fetch NSFW content. Please try again later.")
+        if not items:
+            await ctx.send("No results found.")
             return
 
-        images = self._parse_images(html)
-        if not images:
-            await ctx.send("No NSFW content found for your query.")
-            return
+        item = choice(items)
+        image_url = item["image_url"]
 
-        await ctx.send(f"Found {len(images)} NSFW images for your query: {query}")
-        await self._save_images(images, query=query)
+        embed = discord.Embed(
+            title=f"NSFW: {query}",
+            timestamp=discord.utils.utcnow(),
+        )
+        embed.set_image(url=image_url)
 
-    @commands.command(name="nsfw")
-    @commands.is_nsfw()
-    async def nsfw_command(self, ctx: Context[Parrot], *, query: str) -> None:
-        search_result = await self.bot.assets.search_bucket(query=query)
-        if not search_result:
-            await ctx.send("No NSFW content found for your query.")
-            return
-
-        file_path = search_result[0]["path_url"]
-        file = discord.File(file_path)
-
-        embed = discord.Embed(title=f"NSFW content for: {query}")
-        embed.set_image(url=f"attachment://{file.filename}")
-
-        await ctx.send(file=file, embed=embed)
+        view = DeleteView(author=ctx.author)
+        message = await ctx.send(embed=embed, view=view)
+        view.message = message
 
     @commands.command()
     @commands.cooldown(1, 5, commands.BucketType.user)
@@ -121,8 +165,6 @@ class NSFW(commands.Cog):
         *,
         endpoint: Literal["gif", "jav", "rb", "ahegao", "twitter"] = "gif",
     ) -> None:
-        """Mature Content. 18+ only Please."""
-
         view = DeleteView(author=ctx.author)
 
         async with ctx.typing():
@@ -131,10 +173,13 @@ class NSFW(commands.Cog):
             )
             if r.status == 200:
                 res = await r.json()
-                message = await ctx.send(embed=discord.Embed(timestamp=discord.utils.utcnow()).set_image(url=res["url"]), view=view)
+                message = await ctx.send(
+                    embed=discord.Embed(timestamp=discord.utils.utcnow()).set_image(url=res["url"]),
+                    view=view,
+                )
                 view.message = message
             else:
-                message = await ctx.send("Failed to fetch NSFW content. Please try again later.", view=view)
+                message = await ctx.send("Failed to fetch NSFW content.", view=view)
                 view.message = message
 
     def _try_from_cache(self, type_str: str) -> str | None:
@@ -148,10 +193,10 @@ class NSFW(commands.Cog):
             if response.status > 300:
                 url = self._try_from_cache(type_str)
                 if url is None:
-                    msg = "Something went wrong with the API"
-                    raise commands.CommandError(msg)
+                    raise commands.CommandError("Something went wrong with the API")
             else:
                 url = (await response.json())["message"]
+
         embed = discord.Embed(
             title=f"{type_str.title()}",
             timestamp=discord.utils.utcnow(),
@@ -167,19 +212,16 @@ class NSFW(commands.Cog):
         command_name = ctx.command.qualified_name if ctx.command else "unknown"
 
         embed = await self.get_embed(f"{command_name}")
-        if embed is not None:
-            view = DeleteView(author=ctx.author)
-            msg = await ctx.reply(
-                embed=embed.set_footer(
-                    text=f"Requested by {ctx.author}",
-                    icon_url=ctx.author.display_avatar.url,
-                ),
-                view=view,
-            )
-            view.message = msg
-            return msg
-
-        return await ctx.reply(f"{ctx.author.mention} something not right? This is not us but the API")
+        view = DeleteView(author=ctx.author)
+        msg = await ctx.reply(
+            embed=embed.set_footer(
+                text=f"Requested by {ctx.author}",
+                icon_url=ctx.author.display_avatar.url,
+            ),
+            view=view,
+        )
+        view.message = msg
+        return msg
 
     def command_loader(self) -> None:
         method = self._method

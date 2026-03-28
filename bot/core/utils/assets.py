@@ -182,7 +182,7 @@ class Assets:
         path_url = row[0]
         async with aiofiles.open(path_url, "rb") as file:
             return await file.read()
-    
+
     async def search_bucket(self, query: str) -> list[dict[str, str]]:
         if self.connection is None:
             await self.connect()
