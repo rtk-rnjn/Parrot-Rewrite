@@ -1,11 +1,11 @@
 from __future__ import annotations
 
+import asyncio
 from typing import cast
 
 import discord
 from discord import app_commands
 from discord.ext import commands
-import datetime
 from discord.utils import escape_markdown, maybe_coroutine
 
 from bot.core import Parrot
@@ -89,10 +89,7 @@ class IndiaUnfilteredVoiceEvents(commands.Cog):
             if before.channel == after.channel:
                 # Happens on mute/deafen/etc. Ignore.
                 return
-            moderator = await self.__user_dragged_by(member)
             content = f":arrows_counterclockwise: {user} _moved from voice channel_ {before_channel} _to_ {after_channel}."
-            if moderator is not None:
-                content += f"\n**Action performed by:** {moderator.mention} (`{moderator.id}`)"
 
         await voice_logs_channel.send(content, allowed_mentions=discord.AllowedMentions.none())
 
@@ -169,64 +166,28 @@ class IndiaUnfilteredVoiceEvents(commands.Cog):
 
         await maybe_coroutine(self.bot.redis_client.delete, f"india_unfiltered:hub_voice_channel:{member.id}")
 
-    async def __user_dragged_by(self, member: discord.Member):
-        await discord.utils.sleep_until(discord.utils.utcnow() + datetime.timedelta(seconds=1))
+    async def __user_dragged_by(
+        self,
+        member: discord.Member,
+        *,
+        expected_channel_id: int | None = None,
+    ):
+        if expected_channel_id is None:
+            return None
 
-        time_threshold = discord.utils.utcnow() - datetime.timedelta(seconds=10)
+        await asyncio.sleep(1.5)
 
         async for entry in member.guild.audit_logs(
-            limit=10,
+            limit=5,
             action=discord.AuditLogAction.member_move,
-            after=time_threshold,
         ):
-            if entry.target is None:
+            if entry.target and entry.target.id != member.id:
                 continue
 
-            if entry.target.id == member.id:
-                if entry.user is None:
-                    continue
-
+            if hasattr(entry.extra, "channel") and entry.extra.channel and entry.extra.channel.id == expected_channel_id:
                 return entry.user
 
         return None
-
-    async def __is_user_dragged(
-        self,
-        member: discord.Member,
-        /,
-        *,
-        before: discord.VoiceState,
-        after: discord.VoiceState,
-        moderators: list[discord.Member] | None = None
-    ) -> bool:
-        moderators = moderators or []
-
-        if before.channel is None or after.channel is None:
-            return False
-
-        if before.channel == after.channel:
-            return False
-
-        await discord.utils.sleep_until(discord.utils.utcnow() + datetime.timedelta(seconds=1))
-
-        time_threshold = discord.utils.utcnow() - datetime.timedelta(seconds=10)
-
-        async for entry in member.guild.audit_logs(
-            limit=10,
-            action=discord.AuditLogAction.member_move,
-            after=time_threshold,
-        ):
-            if entry.target is None:
-                continue
-
-            if entry.target.id == member.id:
-                if entry.user is None:
-                    continue
-
-                if any(mod.id == entry.user.id for mod in moderators):
-                    return True
-
-        return False
 
     @commands.Cog.listener(name="on_voice_state_update")
     async def voice_limit(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState) -> None:
@@ -237,10 +198,16 @@ class IndiaUnfilteredVoiceEvents(commands.Cog):
         if channel is None:
             return
 
-        if await self.__is_user_dragged(member, before=before, after=after, moderators=channel.members):
+        if channel.user_limit == 0:
             return
 
-        if channel.user_limit == 0:
+        moderator = await self.__user_dragged_by(member, expected_channel_id=channel.id)
+        allowed_members = channel.members
+
+        if moderator and any(moderator.id == mod.id for mod in allowed_members):
+            print(
+                f"Moderator {moderator} moved user {member} into channel {channel.name} ({channel.id}) which exceeded the user limit, but moderator is in the channel so allowing it."
+            )
             return
 
         if channel and channel.user_limit < len(channel.members):
