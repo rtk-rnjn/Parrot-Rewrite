@@ -94,6 +94,7 @@ class Paths(Enum):
     VALENTINE_FACTS = VALENTINE / "valentine_facts.json"
     ZODIAC_COMPATIBILITY = VALENTINE / "zodiac_compatibility.json"
     ZODIAC_EXPLANATION = VALENTINE / "zodiac_explanation.json"
+    PRIVACY_QUOTES = ASSETS / "quotes-privacy.json"
 
 
 class Emoji(Enum):
@@ -135,6 +136,7 @@ class Assets:
         self._zodiac_explanation: dict[str, ZodiacExplanation] = {}
         self._nouns: list[str] = []
         self._quotes_qotd: list[Quote] = []
+        self._privacy_quotes: list[str] = []
 
         self.emoji = Emoji
         self.connection: aiosqlite.Connection | None = None
@@ -366,3 +368,16 @@ class Assets:
         with open(Paths.QOTD.value, "r", encoding="utf-8") as file:
             self._quotes_qotd = json.load(file)
             return self._quotes_qotd
+
+    @property
+    def privacy_quotes(self) -> list[str]:
+        if self._privacy_quotes:
+            return self._privacy_quotes
+
+        with open(Paths.PRIVACY_QUOTES.value, "r", encoding="utf-8") as file:
+            self._privacy_quotes = json.load(file)
+            return self._privacy_quotes
+
+    @property
+    def random_privacy_quote(self) -> str:
+        return random.choice(self.privacy_quotes)

@@ -165,6 +165,28 @@ class IndiaUnfilteredVoiceEvents(commands.Cog):
 
         await maybe_coroutine(self.bot.redis_client.delete, f"india_unfiltered:hub_voice_channel:{member.id}")
 
+    @commands.Cog.listener(name="on_voice_state_update")
+    async def voice_limit(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState) -> None:
+        if member.guild.id != SERVER_ID:
+            return
+
+        if after.channel is None:
+            return
+
+        if after.channel.user_limit == 0:
+            return
+
+        if after.channel and after.channel.user_limit < len(after.channel.members):
+            await member.move_to(None, reason="User limit exceeded.")
+            await after.channel.send(
+                (
+                    f"{member.mention}, _{self.bot.assets.random_privacy_quote}_\n"
+                    "you have been disconnected because the user limit for this channel has been exceeded.\n"
+                    "If you have manage channel permissions, you can increase the user limit."
+                ),
+                allowed_mentions=discord.AllowedMentions(users=True),
+            )
+
     @app_commands.command(name="limit", description="Set user limit for your voice channel.")
     @app_commands.describe(limit="The user limit to set for your voice channel.")
     async def limit_voice_channel(self, interaction: discord.Interaction, limit: int) -> None:
