@@ -166,22 +166,34 @@ class IndiaUnfilteredVoiceEvents(commands.Cog):
 
         await maybe_coroutine(self.bot.redis_client.delete, f"india_unfiltered:hub_voice_channel:{member.id}")
 
-    async def __is_user_dragged(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState) -> bool:
+
+    async def __is_user_dragged(
+        self,
+        member: discord.Member,
+        before: discord.VoiceState,
+        after: discord.VoiceState
+    ) -> bool:
         if before.channel is None or after.channel is None:
             return False
-        
+
         if before.channel == after.channel:
             return False
-        
-        before_snowflake_time = discord.utils.utcnow() - datetime.timedelta(seconds=5)
-        after_snowflake_time = discord.utils.utcnow() + datetime.timedelta(seconds=5)
 
-        async for entry in member.guild.audit_logs(limit=5, action=discord.AuditLogAction.member_move, after=before_snowflake_time, before=after_snowflake_time):
+        await discord.utils.sleep_until(discord.utils.utcnow() + datetime.timedelta(seconds=1))
+
+        time_threshold = discord.utils.utcnow() - datetime.timedelta(seconds=10)
+
+        async for entry in member.guild.audit_logs(
+            limit=10,
+            action=discord.AuditLogAction.member_move,
+            after=time_threshold,
+        ):
             if entry.target is None:
                 continue
 
             if entry.target.id == member.id:
-                return True
+                if entry.user and entry.user.id != member.id:
+                    return True
 
         return False
 
