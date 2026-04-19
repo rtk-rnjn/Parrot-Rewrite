@@ -5,6 +5,7 @@ from typing import cast
 import discord
 from discord import app_commands
 from discord.ext import commands
+import datetime
 from discord.utils import escape_markdown, maybe_coroutine
 
 from bot.core import Parrot
@@ -165,6 +166,25 @@ class IndiaUnfilteredVoiceEvents(commands.Cog):
 
         await maybe_coroutine(self.bot.redis_client.delete, f"india_unfiltered:hub_voice_channel:{member.id}")
 
+    async def __is_user_dragged(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState) -> bool:
+        if before.channel is None or after.channel is None:
+            return False
+        
+        if before.channel == after.channel:
+            return False
+        
+        before_snowflake_time = discord.utils.utcnow() - datetime.timedelta(seconds=5)
+        after_snowflake_time = discord.utils.utcnow() + datetime.timedelta(seconds=5)
+
+        async for entry in member.guild.audit_logs(limit=5, action=discord.AuditLogAction.member_move, after=before_snowflake_time, before=after_snowflake_time):
+            if entry.target is None:
+                continue
+
+            if entry.target.id == member.id:
+                return True
+
+        return False
+
     @commands.Cog.listener(name="on_voice_state_update")
     async def voice_limit(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState) -> None:
         if member.guild.id != SERVER_ID:
@@ -172,6 +192,9 @@ class IndiaUnfilteredVoiceEvents(commands.Cog):
 
         channel = after.channel
         if channel is None:
+            return
+
+        if await self.__is_user_dragged(member, before=before, after=after):
             return
 
         if channel.user_limit == 0:
