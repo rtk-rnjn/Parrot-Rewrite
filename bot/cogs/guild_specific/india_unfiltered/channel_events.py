@@ -45,7 +45,7 @@ class IndiaUnfilteredChannelEvents(commands.Cog):
         content = None
         delete_after = 10 * 60
         if next_iteration is not None:
-            tz = timezone("Asia/Kolkata")
+            tz = timezone("UTC")
             if next_iteration.tzinfo:
                 tz = next_iteration.tzinfo
 

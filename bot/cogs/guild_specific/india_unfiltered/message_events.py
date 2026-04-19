@@ -93,7 +93,7 @@ class IndiaUnfilteredMessageEvents(commands.Cog):
             except discord.HTTPException:
                 pass  # Failed to change nickname for some other reason
 
-    @tasks.loop(time=time(second=1, tzinfo=timezone("Asia/Kolkata")))
+    @tasks.loop(time=time(second=1, tzinfo=timezone("UTC")))
     async def quote_of_the_day(self) -> None:
         if self.qotd_channel is None:
             return
