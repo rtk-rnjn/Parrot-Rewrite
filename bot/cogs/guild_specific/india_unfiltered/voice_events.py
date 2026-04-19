@@ -182,8 +182,8 @@ class IndiaUnfilteredVoiceEvents(commands.Cog):
             await channel.send(
                 (
                     f"{member.mention}, _{self.bot.assets.random_privacy_quote}_\n"
-                    "you have been disconnected because the user limit for this channel has been exceeded.\n"
-                    "If you have manage channel permissions, you can increase the user limit."
+                    "**You have been disconnected because the user limit for this channel has been exceeded.**\n"
+                    "-# If you have manage channel permissions, you can increase the user limit."
                 ),
                 allowed_mentions=discord.AllowedMentions(users=True),
             )
