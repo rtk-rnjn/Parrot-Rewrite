@@ -170,15 +170,16 @@ class IndiaUnfilteredVoiceEvents(commands.Cog):
         if member.guild.id != SERVER_ID:
             return
 
-        if after.channel is None:
+        channel = after.channel
+        if channel is None:
             return
 
-        if after.channel.user_limit == 0:
+        if channel.user_limit == 0:
             return
 
-        if after.channel and after.channel.user_limit < len(after.channel.members):
+        if channel and channel.user_limit < len(channel.members):
             await member.move_to(None, reason="User limit exceeded.")
-            await after.channel.send(
+            await channel.send(
                 (
                     f"{member.mention}, _{self.bot.assets.random_privacy_quote}_\n"
                     "you have been disconnected because the user limit for this channel has been exceeded.\n"
