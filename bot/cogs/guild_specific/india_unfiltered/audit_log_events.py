@@ -55,9 +55,11 @@ class IndiaUnfilteredAuditLogEvents(commands.Cog):
                 inline=False,
             )
 
+        user = user or entry.guild.get_member(entry.user_id) if entry.user_id else None
+
         embed.add_field(
             name="Moderator",
-            value=f"{user} (`{entry.user_id}`)" if user else f"Unknown (`{entry.user_id}`)",
+            value=f"{user.mention} (`{entry.user_id}`)" if user else f"Unknown (`{entry.user_id}`)",
             inline=False,
         )
 
