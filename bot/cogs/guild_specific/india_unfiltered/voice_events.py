@@ -184,7 +184,7 @@ class IndiaUnfilteredVoiceEvents(commands.Cog):
             if entry.target and entry.target.id != member.id:
                 continue
 
-            if hasattr(entry.extra, "channel") and entry.extra.channel and entry.extra.channel.id == expected_channel_id:
+            if hasattr(entry.extra, "channel") and entry.extra.channel and entry.extra.channel.id == expected_channel_id:  # type: ignore
                 return entry.user
 
         return None
@@ -205,9 +205,6 @@ class IndiaUnfilteredVoiceEvents(commands.Cog):
         allowed_members = channel.members
 
         if moderator and any(moderator.id == mod.id for mod in allowed_members):
-            print(
-                f"Moderator {moderator} moved user {member} into channel {channel.name} ({channel.id}) which exceeded the user limit, but moderator is in the channel so allowing it."
-            )
             return
 
         if channel and channel.user_limit < len(channel.members):

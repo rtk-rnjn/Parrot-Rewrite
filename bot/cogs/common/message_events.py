@@ -42,7 +42,7 @@ class SnipeMessageListeners:
 
         return data
 
-    async def store_message(self, key_prefix: str, message: discord.Message, *, older_message: discord.Message | None = None, ttl: int = 360) -> None:
+    async def store_message(self, key_prefix: str, message: discord.Message, *, older_message: discord.Message | None = None, ttl: int = 60) -> None:
         channel_key = f"{key_prefix}:{message.channel.id}"
         message_key = f"{key_prefix}:{message.id}"
 
@@ -52,6 +52,12 @@ class SnipeMessageListeners:
         serialized = self.serialize_message(message, older_message=older_message)
         await maybe_coroutine(self.redis_client.hset, message_key, mapping=dict(serialized))
         await maybe_coroutine(self.redis_client.expire, message_key, ttl)
+    
+    async def delete_sniped_message(self, key_prefix: str, channel_id: int) -> None:
+        message_id = await maybe_coroutine(self.redis_client.get, f"{key_prefix}:{channel_id}")
+        if message_id is not None:
+            await maybe_coroutine(self.redis_client.delete, f"{key_prefix}:{message_id}")
+            await maybe_coroutine(self.redis_client.delete, f"{key_prefix}:{channel_id}")
 
     async def fetch_sniped_message(self, key_prefix: str, channel_id: int) -> SerializedMessage | None:
         message_id = await maybe_coroutine(self.redis_client.get, f"{key_prefix}:{channel_id}")
@@ -61,6 +67,8 @@ class SnipeMessageListeners:
         data: dict | None = await maybe_coroutine(self.redis_client.hgetall, f"{key_prefix}:{message_id}")
         if data is None:
             return None
+        
+        await self.delete_sniped_message(key_prefix, channel_id)
 
         return SerializedMessage(**data)
 
