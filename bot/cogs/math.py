@@ -83,6 +83,8 @@ class Math(commands.Cog):
         except EvaluationError as exc:
             return f"Math error: {exc}"
 
+        if "=" in text:
+            return result
         return f"{text.strip()} = {result}"
 
 
