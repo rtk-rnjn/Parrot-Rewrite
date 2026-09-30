@@ -30,9 +30,14 @@ def looks_like_math(text: str) -> bool:
 
     if "=" in text:
         lhs, rhs = text.split("=", 1)
-        if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", lhs.strip()):
+        lhs = lhs.strip()
+        rhs = rhs.strip()
+
+        if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", lhs):
             return False
-        if not rhs.strip():
+        if rhs == lhs:
+            return False
+        if not rhs:
             return True
 
     function_names = {match.group(1) for match in _FUNCTION_CALL_RE.finditer(text)}
