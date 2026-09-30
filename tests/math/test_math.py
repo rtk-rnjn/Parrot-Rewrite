@@ -46,6 +46,10 @@ class MathTests(unittest.TestCase):
         with self.assertRaises(MathParseError):
             parse_input("x = 1 = 2", self.store, 1)
 
+    def test_self_assignment_is_rejected(self) -> None:
+        with self.assertRaises(MathParseError):
+            parse_input("random_text = random_text", self.store, 1)
+
     def test_assignment_to_constant_is_rejected(self) -> None:
         with self.assertRaises(MathParseError):
             parse_input("pi = 3", self.store, 1)
