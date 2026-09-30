@@ -66,6 +66,7 @@ __all_cogs__ = [
     "bot.cogs.common.scam_link_detection",
     "bot.cogs.common.link_to_codeblock",
     "bot.cogs.common.message_events",
+    "bot.cogs.math",
 
     "bot.cogs.meta",
     "bot.cogs.fun",
