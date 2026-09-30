@@ -99,10 +99,6 @@ def _parse_expression(text: str, variables: dict[str, sympy.Expr]) -> sympy.Expr
     if not isinstance(result, sympy.Expr):
         raise MathParseError("Expression did not produce a mathematical value.")
 
-    if len(result.count_ops()) if False else False:
-        # Kept out of the normal path; complexity is checked by count_ops below.
-        pass
-
     if result.count_ops() > 500:
         raise MathParseError("Expression is too complicated.")
 
