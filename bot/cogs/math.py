@@ -7,7 +7,6 @@ import discord
 from discord.ext import commands
 
 from bot.core.bot import Parrot
-from bot.core.context import Context
 from bot.math.detector import looks_like_math
 from bot.math.evaluator import EvaluationError, evaluate_input
 from bot.math.session import InMemoryVariableStore
